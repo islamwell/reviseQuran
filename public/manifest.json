@@ -1,0 +1,17 @@
+{
+  "name": "HifzFlow — Guard Your Memorization",
+  "short_name": "HifzFlow",
+  "description": "Intelligent Quran memorization revision companion",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070d0b",
+  "theme_color": "#070d0b",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ]
+}

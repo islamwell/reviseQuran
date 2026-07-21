@@ -2116,3 +2116,58 @@ footer .ver {
   letter-spacing: 0.08em;
 }
 
+/* ============ AUTH & SYNC STYLING ============ */
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--card2);
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+}
+
+.profile-chip:hover {
+  border-color: var(--acc);
+  transform: translateY(-1px);
+}
+
+.profile-chip .avatar {
+  font-size: 0.85rem;
+}
+
+.profile-chip .sync-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--ink2);
+}
+
+.profile-chip .sync-badge.synced {
+  color: var(--acc);
+}
+
+.oauth-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line2);
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 0.88rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.oauth-btn:hover {
+  background: var(--card2);
+  transform: translateY(-1px);
+}
+
+

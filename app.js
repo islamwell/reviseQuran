@@ -93,9 +93,47 @@ function loadState() {
   }
 }
 
+let syncDebounceTimer = null;
+export function syncWithCloudflare() {
+  clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(async () => {
+    try {
+      const chipBadge = document.getElementById('chipSyncStatus');
+      if (chipBadge) chipBadge.textContent = 'Syncing...';
+
+      const payload = {
+        userId: S.user?.id || 'guest',
+        data: {
+          memorized: S.memorized,
+          stats: S.stats,
+          logs: S.logs,
+          streak: S.streak,
+          settings: { dailyGoal: S.dailyGoal, cycleDays: S.cycleDays }
+        }
+      };
+
+      const res = await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        if (chipBadge) {
+          chipBadge.textContent = S.user?.email ? 'Synced 🟢' : 'Local 🟡';
+          chipBadge.className = `sync-badge ${S.user?.email ? 'synced' : ''}`;
+        }
+      }
+    } catch (err) {
+      console.warn("Cloudflare background sync offline/failed", err);
+    }
+  }, 1200);
+}
+
 export function saveState() {
   try {
     localStorage.setItem(KEY, JSON.stringify(S));
+    syncWithCloudflare();
   } catch (e) {
     console.error("Failed to save state to local storage", e);
   }
@@ -228,7 +266,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.1.1 (updated 2026-07-21 18:34)`;
+    verDiv.textContent = `v1.2.0 (updated 2026-07-21 18:38)`;
   }
 }
 
@@ -907,6 +945,107 @@ function setupEventListeners() {
       finishOnboard();
     };
   }
+
+  // Cloudflare Auth button listeners
+  const btnGoogle = document.getElementById('btnGoogleAuth');
+  if (btnGoogle) btnGoogle.onclick = () => loginWithGoogle();
+
+  const btnEmail = document.getElementById('btnEmailAuth');
+  if (btnEmail) {
+    btnEmail.onclick = () => {
+      const email = document.getElementById('authEmailInput').value.trim();
+      if (!email || !email.includes('@')) { toast("Please enter a valid email"); return; }
+      loginWithEmail(email);
+    };
+  }
+
+  const btnSignOut = document.getElementById('btnSignOut');
+  if (btnSignOut) btnSignOut.onclick = () => signOutUser();
+}
+
+export function updateAuthUI() {
+  const chipAvatar = document.getElementById('chipAvatar');
+  const chipSyncStatus = document.getElementById('chipSyncStatus');
+  const signedOutState = document.getElementById('authSignedOutState');
+  const signedInState = document.getElementById('authSignedInState');
+  const displayAvatar = document.getElementById('authDisplayAvatar');
+  const displayName = document.getElementById('authDisplayName');
+  const displayEmail = document.getElementById('authDisplayEmail');
+
+  if (S.user && S.user.email) {
+    if (chipAvatar) chipAvatar.textContent = '🟢';
+    if (chipSyncStatus) { chipSyncStatus.textContent = 'Synced 🟢'; chipSyncStatus.className = 'sync-badge synced'; }
+    if (signedOutState) signedOutState.style.display = 'none';
+    if (signedInState) signedInState.style.display = 'block';
+    if (displayAvatar) displayAvatar.textContent = '👤';
+    if (displayName) displayName.textContent = S.user.name || S.user.email.split('@')[0];
+    if (displayEmail) displayEmail.textContent = S.user.email;
+  } else {
+    if (chipAvatar) chipAvatar.textContent = '👤';
+    if (chipSyncStatus) { chipSyncStatus.textContent = 'Guest'; chipSyncStatus.className = 'sync-badge'; }
+    if (signedOutState) signedOutState.style.display = 'block';
+    if (signedInState) signedInState.style.display = 'none';
+  }
+}
+
+export function openAuthModal() {
+  updateAuthUI();
+  const dlg = document.getElementById('dlgAuth');
+  if (dlg) dlg.showModal();
+}
+window.openAuthModal = openAuthModal;
+
+export async function loginWithEmail(email) {
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login_email', email })
+    });
+    const data = await res.json();
+    if (data.success) {
+      S.user = data.user;
+      saveState();
+      updateAuthUI();
+      const dlg = document.getElementById('dlgAuth');
+      if (dlg) dlg.close();
+      toast(`Signed in as ${S.user.email}! ✦`);
+    } else {
+      toast(data.error || "Login failed");
+    }
+  } catch (err) {
+    toast("Network error during login");
+  }
+}
+
+export async function loginWithGoogle() {
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'login_google', email: 'user@gmail.com', name: 'Quran Student' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      S.user = data.user;
+      saveState();
+      updateAuthUI();
+      const dlg = document.getElementById('dlgAuth');
+      if (dlg) dlg.close();
+      toast("Signed in with Google! ✦");
+    }
+  } catch (err) {
+    toast("Network error during Google sign-in");
+  }
+}
+
+export function signOutUser() {
+  S.user = { id: "guest", email: null, name: null, provider: null };
+  saveState();
+  updateAuthUI();
+  const dlg = document.getElementById('dlgAuth');
+  if (dlg) dlg.close();
+  toast("Signed out");
 }
 
 export function renderOnboardList() {
@@ -973,6 +1112,11 @@ async function boot() {
   applyPreferences();
   verifyDailyStreak();
   setupEventListeners();
+  updateAuthUI();
+  
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW reg error:', err));
+  }
   
   await loadQuranDataset();
   
