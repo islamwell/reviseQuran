@@ -192,6 +192,7 @@ export function getFlatAyahs() {
   const list = [];
   for (const sNum in QURAN_DATA) {
     const s = QURAN_DATA[sNum];
+    if (!s || !s.ayahs) continue;
     s.ayahs.forEach((ay, idx) => {
       list.push({
         s,
@@ -214,8 +215,8 @@ export function isSurahMemorized(sNum) {
 }
 
 export function getSurahRollup(sNum) {
-  const surah = QURAN_DATA[sNum];
-  if (!surah) return { status: "Not Started", memCount: 0, total: 0, pct: 0 };
+  const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
+  if (!surah || !surah.ayahs) return { status: "Not Started", memCount: 0, total: 0, pct: 0, avgStr: 0 };
   
   const total = surah.ayahs.length;
   let memCount = 0;
@@ -241,8 +242,8 @@ export function getSurahRollup(sNum) {
 
 // Bulk mark entire surah as memorized
 export function bulkMarkSurahMemorized(sNum, level = 7) {
-  const surah = QURAN_DATA[sNum];
-  if (!surah) return;
+  const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
+  if (!surah || !surah.ayahs) return;
   
   S.memorized[sNum] = true;
   surah.ayahs.forEach((_, idx) => {
@@ -268,7 +269,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.2.1 (updated 2026-07-21 18:55)`;
+    verDiv.textContent = `v1.2.2 (updated 2026-07-21 18:57)`;
   }
 }
 
@@ -1142,3 +1143,22 @@ async function boot() {
 document.addEventListener('DOMContentLoaded', () => {
   boot();
 });
+
+// Attach all global handlers for inline HTML onclick attributes
+window.go = go;
+window.toast = toast;
+window.openSurahDetail = openSurahDetail;
+window.openAyahSheet = openAyahSheet;
+window.toggleSurahMemorized = toggleSurahMemorized;
+window.bulkMarkSurahMemorized = bulkMarkSurahMemorized;
+window.setAyahRating = setAyahRating;
+window.startPracticeSession = startPracticeSession;
+window.endSession = endSession;
+window.openSessionConfig = openSessionConfig;
+window.gradePractice = gradePractice;
+window.finishOnboard = finishOnboard;
+window.openAuthModal = openAuthModal;
+window.loginWithGoogle = loginWithGoogle;
+window.loginWithEmail = loginWithEmail;
+window.signOutUser = signOutUser;
+
