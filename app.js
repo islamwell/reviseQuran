@@ -69,7 +69,9 @@ export async function loadQuranDataset() {
     const res = await fetch('./data/quran_63_114.json');
     if (res.ok) {
       QURAN_DATA = await res.json();
-      console.log("Quran Dataset (Surahs 63-114) loaded successfully.");
+      console.log("Quran Dataset (Surahs 63-114) loaded successfully with keys:", Object.keys(QURAN_DATA).length);
+    } else {
+      console.error("Failed to load quran_63_114.json, HTTP status:", res.status);
     }
   } catch (err) {
     console.warn("Falling back to local cache or basic dataset", err);
@@ -266,7 +268,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.2.0 (updated 2026-07-21 18:38)`;
+    verDiv.textContent = `v1.2.1 (updated 2026-07-21 18:55)`;
   }
 }
 
@@ -489,7 +491,7 @@ function renderQuran() {
   let html = '';
   
   for (let sNum = 63; sNum <= 114; sNum++) {
-    const surah = QURAN_DATA[sNum];
+    const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
     if (!surah) continue;
     
     // Apply filters
