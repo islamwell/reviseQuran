@@ -1,242 +1,98 @@
 /* ================================================================
-   HifzFlow — Spaced Repetition Quran Revision App
-   Dual-track (Arabic + Meaning) Memory Tracking
+   HifzFlow — Quran Memorization Revision Engine (Phase 1 Expansion)
+   Surahs 63–114 Scope, 9-Point Scale, Dual-Track SM-2, & Analytics
    ================================================================ */
 
-/* ============ QURAN DATA BANK ============ */
-export const BANK = [
-  {
-    cat: "The Opener",
-    id: "opener",
-    surahs: [
-      {
-        n: 1,
-        name: "Al-Fatihah",
-        ar: "الفاتحة",
-        en: "The Opener",
-        ayahs: [
-          ["بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", "In the name of Allah, the Most Gracious, the Most Merciful."],
-          ["الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", "All praise is due to Allah, Lord of the worlds."],
-          ["الرَّحْمَٰنِ الرَّحِيمِ", "The Most Gracious, the Most Merciful."],
-          ["مَالِكِ يَوْمِ الدِّينِ", "Master of the Day of Judgement."],
-          ["إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ", "You alone we worship, and You alone we ask for help."],
-          ["اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ", "Guide us along the Straight Path."],
-          ["صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ", "The path of those You have blessed — not of those who earned Your anger, nor of those who went astray."]
-        ]
-      }
-    ]
-  },
-  {
-    cat: "Juz ʿAmma · Short Surahs",
-    id: "short",
-    surahs: [
-      {
-        n: 112,
-        name: "Al-Ikhlas",
-        ar: "الإخلاص",
-        en: "The Sincerity",
-        ayahs: [
-          ["قُلْ هُوَ اللَّهُ أَحَدٌ", "Say: He is Allah, the One."],
-          ["اللَّهُ الصَّمَدُ", "Allah, the Eternal Refuge."],
-          ["لَمْ يَلِدْ وَلَمْ يُولَدْ", "He neither begets nor is born."],
-          ["وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ", "And there is none comparable to Him."]
-        ]
-      },
-      {
-        n: 113,
-        name: "Al-Falaq",
-        ar: "الفلق",
-        en: "The Daybreak",
-        ayahs: [
-          ["قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ", "Say: I seek refuge in the Lord of daybreak,"],
-          ["مِن شَرِّ مَا خَلَقَ", "from the evil of what He created,"],
-          ["وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ", "and from the evil of darkness when it settles,"],
-          ["وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ", "and from the evil of the blowers in knots,"],
-          ["وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ", "and from the evil of an envier when he envies."]
-        ]
-      },
-      {
-        n: 114,
-        name: "An-Nas",
-        ar: "الناس",
-        en: "Mankind",
-        ayahs: [
-          ["قُلْ أَعُوذُ بِرَبِّ النَّاسِ", "Say: I seek refuge in the Lord of mankind,"],
-          ["مَلِكِ النَّاسِ", "the Sovereign of mankind,"],
-          ["إِلَٰهِ النَّاسِ", "the God of mankind,"],
-          ["مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ", "from the evil of the retreating whisperer,"],
-          ["الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ", "who whispers into the chests of mankind,"],
-          ["مِنَ الْجِنَّةِ وَالنَّاسِ", "from among jinn and mankind."]
-        ]
-      },
-      {
-        n: 103,
-        name: "Al-ʿAsr",
-        ar: "العصر",
-        en: "The Declining Day",
-        ayahs: [
-          ["وَالْعَصْرِ", "By time,"],
-          ["إِنَّ الْإِنسَانَ لَفِي خُسْرٍ", "indeed, mankind is in loss,"],
-          ["إِلَّا الَّذِينَ آمَنُوا وَعَمِلُوا الصَّالِحَاتِ وَتَوَاصَوْا بِالْحَقِّ وَتَوَاصَوْا بِالصَّبْرِ", "except those who believe, do righteous deeds, and urge each other to truth and urge each other to patience."]
-        ]
-      },
-      {
-        n: 108,
-        name: "Al-Kawthar",
-        ar: "الكوثر",
-        en: "The Abundance",
-        ayahs: [
-          ["إِنَّا أَعْطَيْنَاكَ الْكَوْثَرَ", "Indeed, We have granted you al-Kawthar."],
-          ["فَصَلِّ لِرَبِّكَ وَانْحَرْ", "So pray to your Lord and sacrifice."],
-          ["إِنَّ شَانِئَكَ هُوَ الْأَبْتَرُ", "Indeed, your enemy is the one cut off."]
-        ]
-      },
-      {
-        n: 110,
-        name: "An-Nasr",
-        ar: "النصر",
-        en: "The Divine Support",
-        ayahs: [
-          ["إِذَا جَاءَ نَصْرُ اللَّهِ وَالْفَتْحُ", "When the victory of Allah has come and the conquest,"],
-          ["وَرَأَيْتَ النَّاسَ يَدْخُلُونَ فِي دِينِ اللَّهِ أَفْوَاجًا", "and you see the people entering the religion of Allah in multitudes,"],
-          ["فَسَبِّحْ بِحَمْدِ رَبِّكَ وَاسْتَغْفِرْهُ ۚ إِنَّهُ كَانَ تَوَّابًا", "then exalt Him with praise of your Lord and ask His forgiveness. Indeed, He is ever Accepting of repentance."]
-        ]
-      },
-      {
-        n: 97,
-        name: "Al-Qadr",
-        ar: "القدر",
-        en: "The Night of Decree",
-        ayahs: [
-          ["إِنَّا أَنزَلْنَاهُ فِي لَيْلَةِ الْقَدْرِ", "Indeed, We sent it down during the Night of Decree."],
-          ["وَمَا أَدْرَاكَ مَا لَيْلَةُ الْقَدْرِ", "And what can make you know what the Night of Decree is?"],
-          ["لَيْلَةُ الْقَدْرِ خَيْرٌ مِّنْ أَلْفِ شَهْرٍ", "The Night of Decree is better than a thousand months."],
-          ["تَنَزَّلُ الْمَلَائِكَةُ وَالرُّوحُ فِيهَا بِإِذْنِ رَبِّهِم مِّن كُلِّ أَمْرٍ", "The angels and the Spirit descend therein by permission of their Lord for every matter."],
-          ["سَلَامٌ هِيَ حَتَّىٰ مَطْلَعِ الْفَجْرِ", "Peace it is until the emergence of dawn."]
-        ]
-      },
-      {
-        n: 111,
-        name: "Al-Masad",
-        ar: "المسد",
-        en: "The Palm Fiber",
-        ayahs: [
-          ["تَبَّتْ يَدَا أَبِي لَهَبٍ وَتَبَّ", "May the hands of Abu Lahab be ruined, and ruined is he."],
-          ["مَا أَغْنَىٰ عَنْهُ مَالُهُ وَمَا كَسَبَ", "His wealth will not avail him, nor what he earned."],
-          ["سَيَصْلَىٰ نَارًا ذَاتَ لَهَبٍ", "He will enter a Fire of flame,"],
-          ["وَامْرَأَتُهُ حَمَّالَةَ الْحَطَبِ", "and his wife, the carrier of firewood,"],
-          ["فِي جِيدِهَا حَبْلٌ مِّن مَّسَدٍ", "around her neck a rope of palm fiber."]
-        ]
-      },
-      {
-        n: 105,
-        name: "Al-Fil",
-        ar: "الفيل",
-        en: "The Elephant",
-        ayahs: [
-          ["أَلَمْ تَرَ كَيْفَ فَعَلَ رَبُّكَ بِأَصْحَابِ الْفِيلِ", "Have you not seen how your Lord dealt with the companions of the elephant?"],
-          ["أَلَمْ يَجْعَلْ كَيْدَهُمْ فِي تَضْلِيلٍ", "Did He not make their plan into misguidance?"],
-          ["وَأَرْسَلَ عَلَيْهِمْ طَيْرًا أَبَابِيلَ", "And He sent against them birds in flocks,"],
-          ["تَرْمِيهِم بِحِجَارَةٍ مِّن سِجِّيلٍ", "striking them with stones of hard clay,"],
-          ["فَجَعَلَهُمْ كَعَصْفٍ مَّأْكُولٍ", "and made them like eaten straw."]
-        ]
-      },
-      {
-        n: 106,
-        name: "Quraysh",
-        ar: "قريش",
-        en: "Quraysh",
-        ayahs: [
-          ["لِإِيلَافِ قُرَيْشٍ", "For the accustomed security of Quraysh,"],
-          ["إِيلَافِهِمْ رِحْلَةَ الشِّتَاءِ وَالصَّيْفِ", "their accustomed security in the caravan of winter and summer,"],
-          ["فَلْيَعْبُدُوا رَبَّ هَٰذَا الْبَيْتِ", "let them worship the Lord of this House,"],
-          ["الَّذِي أَطْعَمَهُم مِّن جُوعٍ وَآمَنَهُم مِّنْ خَوْفٍ", "who has fed them against hunger and made them safe from fear."]
-        ]
-      }
-    ]
-  },
-  {
-    cat: "Core Verses",
-    id: "core",
-    surahs: [
-      {
-        n: 2,
-        name: "Āyat al-Kursī",
-        ar: "آية الكرسي",
-        en: "The Throne Verse · 2:255",
-        seg: true,
-        ayahs: [
-          ["اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ", "Allah — there is no god worthy of worship except Him, the Ever-Living, the Sustainer of all. Neither drowsiness nor sleep overtakes Him. (1/4)"],
-          ["لَّهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ", "To Him belongs whatever is in the heavens and the earth. Who can intercede with Him except by His permission? (2/4)"],
-          ["يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ", "He knows what is before them and behind them, and they encompass nothing of His knowledge except what He wills. (3/4)"],
-          ["وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيمُ", "His Kursi extends over the heavens and the earth, and preserving them does not tire Him. He is the Most High, the Most Great. (4/4)"]
-        ]
-      }
-    ]
-  }
+/* ============ 9-POINT RATING SCALE CONFIG ============ */
+export const RATING_SCALE = [
+  { level: 1, label: "Not memorized", pct: 0, iv: 0, class: "lvl-1" },
+  { level: 2, label: "Very weak", pct: 15, iv: 0.05, class: "lvl-2" },
+  { level: 3, label: "Weak", pct: 30, iv: 1, class: "lvl-3" },
+  { level: 4, label: "Developing", pct: 45, iv: 3, class: "lvl-4" },
+  { level: 5, label: "Moderate", pct: 60, iv: 7, class: "lvl-5" },
+  { level: 6, label: "Good", pct: 72, iv: 14, class: "lvl-6" },
+  { level: 7, label: "Strong", pct: 84, iv: 30, class: "lvl-7" },
+  { level: 8, label: "Very strong", pct: 93, iv: 60, class: "lvl-8" },
+  { level: 9, label: "Almost automatic", pct: 100, iv: 90, class: "lvl-9" }
 ];
 
+export function ratingToStrength(lvl) {
+  const item = RATING_SCALE.find(r => r.level === lvl);
+  return item ? item.pct : 0;
+}
+
+export function strengthToRating(pct) {
+  if (pct === null) return 1;
+  if (pct >= 95) return 9;
+  if (pct >= 88) return 8;
+  if (pct >= 78) return 7;
+  if (pct >= 66) return 6;
+  if (pct >= 52) return 5;
+  if (pct >= 38) return 4;
+  if (pct >= 22) return 3;
+  if (pct >= 5) return 2;
+  return 1;
+}
+
+/* ============ WISDOM DATA ============ */
 export const WISDOM = [
   { tag: "On Patience", t: "\"O you who believe, seek help through patience and prayer. Indeed, Allah is with the patient.\"", s: "Qur'an 2:153" },
   { tag: "On Steadiness", t: "\"The most beloved deeds to Allah are the most consistent, even if small.\"", s: "Sahih al-Bukhari 6464" },
   { tag: "On the Qur'an", t: "\"The example of the one who recites the Qur'an is that of a citron — its fragrance is sweet and its taste is sweet.\"", s: "Sahih al-Bukhari 7560" },
   { tag: "On Review", t: "\"Keep revisiting the Qur'an, for it slips away from memory more easily than camels escape their ropes.\"", s: "Sahih al-Bukhari 5033" },
   { tag: "On Ease", t: "\"Allah intends for you ease and does not intend for you hardship.\"", s: "Qur'an 2:185" },
-  { tag: "On Knowledge", t: "\"Read! And your Lord is the Most Generous. Who has taught by the pen. He has taught man that which he knew not.\"", s: "Qur'an 96:3-5" },
-  { tag: "On Remembrance", t: "\"And We have certainly made the Qur'an easy for remembrance, so is there any who will remember?\"", s: "Qur'an 54:17" }
+  { tag: "On Knowledge", t: "\"Read! And your Lord is the Most Generous. Who has taught by the pen.\"", s: "Qur'an 96:3-5" },
+  { tag: "On Progress", t: "\"You returned to an ayah that was difficult. That is progress.\"", s: "Hifz Mindset" }
 ];
 
-/* ============ STRINGS i18n ============ */
-const STR = {
-  en: {
-    due: "due",
-    newTag: "new",
-    strong: "Strong",
-    weak: "Weak",
-    reviewNow: "Review now",
-    nextDue: "Next review",
-    recite: "Recite · Arabic",
-    meaning: "Meaning",
-    tapReveal: "Tap to reveal",
-    grades: ["Again", "Hard", "Good", "Easy"],
-    gradeSub: ["<1 day", "soon", "on track", "effortless"]
-  }
-};
-const L = STR.en;
+/* ============ DATASET & STATE MANAGEMENT ============ */
+export let QURAN_DATA = {};
+const KEY = "hifzflow-v1.1";
 
-/* ============ STATE MANAGEMENT ============ */
-const KEY = "hifzflow-v1";
 let S = {
-  memorized: {},
-  stats: {},
-  taught: {},
+  memorized: {}, // surah_num -> boolean or ayah_map
+  stats: {},     // "surah:ayah" -> { a: { lvl, iv, last }, m: { lvl, iv, last } }
+  logs: [],      // recitation logs: [{ date, who, notes }]
   streak: 0,
   lastDay: null,
   today: { day: "", done: 0 },
   theme: "dark",
   zoom: 1,
   onboarded: false,
-  dailyGoal: 10
+  dailyGoal: 10,
+  cycleDays: 30
 };
 
-// Load state
+// Async Dataset Loader
+export async function loadQuranDataset() {
+  try {
+    const res = await fetch('./data/quran_63_114.json');
+    if (res.ok) {
+      QURAN_DATA = await res.json();
+      console.log("Quran Dataset (Surahs 63-114) loaded successfully.");
+    }
+  } catch (err) {
+    console.warn("Falling back to local cache or basic dataset", err);
+  }
+}
+
+// Load state from localStorage
 function loadState() {
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       S = { ...S, ...parsed };
-      // Make sure today is structure matched
       if (!S.today) S.today = { day: "", done: 0 };
       if (!S.dailyGoal) S.dailyGoal = 10;
-      if (!S.taught) S.taught = {};
+      if (!S.cycleDays) S.cycleDays = 30;
+      if (!S.logs) S.logs = [];
     }
   } catch (e) {
     console.error("Failed to load local storage state", e);
   }
 }
 
-// Save state
 export function saveState() {
   try {
     localStorage.setItem(KEY, JSON.stringify(S));
@@ -247,26 +103,24 @@ export function saveState() {
 
 const idOf = (sn, ai) => `${sn}:${ai}`;
 
-// Fetch stats block for specific track
+// Get stats block
 export function getStatBlock(id, track) {
   if (!S.stats[id]) S.stats[id] = { a: null, m: null };
   if (!S.stats[id][track]) {
-    S.stats[id][track] = { iv: 0, e: 2.5, r: 0, last: 0 };
+    S.stats[id][track] = { lvl: 1, iv: 0, last: 0 };
   }
   return S.stats[id][track];
 }
 
-// Spaced repetition strength calculations (exponential forgetting curve)
+// Retention Curve Calculation (0 to 100%)
 export function calculateStrength(id, track) {
   const st = S.stats[id]?.[track];
   if (!st || !st.last) return null;
-  const elapsedDays = (Date.now() - st.last) / 86400000; // 1000 * 60 * 60 * 24
-  // Retention R = 100 * exp(-t/S) where S is interval (half life)
+  const elapsedDays = (Date.now() - st.last) / 86400000;
   const halfLife = Math.max(st.iv, 0.1);
-  return Math.round(100 * Math.exp(-elapsedDays / halfLife));
+  return Math.max(0, Math.round(100 * Math.exp(-elapsedDays / halfLife)));
 }
 
-// Combined strength of recitation and translation track
 export function getCombinedStrength(id) {
   const a = calculateStrength(id, 'a');
   const m = calculateStrength(id, 'm');
@@ -274,63 +128,89 @@ export function getCombinedStrength(id) {
   return Math.round(((a ?? 0) + (m ?? 0)) / 2);
 }
 
-// SM-2 Spaced Repetition Grading algorithm implementation
-export function gradeAyah(id, track, g) {
+// 9-Point Scale Rating Update
+export function setAyahRating(id, track, ratingLevel) {
   const st = getStatBlock(id, track);
-  const now = Date.now();
+  const scaleInfo = RATING_SCALE.find(r => r.level === ratingLevel) || RATING_SCALE[0];
   
-  if (g === 1) { // Again (fail)
-    st.iv = 0.05; // 1.2 hours
-    st.e = Math.max(1.3, st.e - 0.25);
-    st.r = 0;
-  } else if (g === 2) { // Hard
-    st.iv = st.iv < 1 ? 1 : st.iv * 1.25;
-    st.e = Math.max(1.3, st.e - 0.15);
-    st.r++;
-  } else if (g === 3) { // Good
-    st.iv = st.r === 0 ? 1 : st.iv * st.e;
-    st.r++;
-  } else { // Easy
-    st.iv = st.r === 0 ? 2.5 : st.iv * st.e * 1.35;
-    st.e = Math.min(3.0, st.e + 0.12);
-    st.r++;
-  }
-  
-  st.last = now;
+  st.lvl = ratingLevel;
+  st.iv = scaleInfo.iv;
+  st.last = Date.now();
   saveState();
 }
 
-// Checks if an ayah is due for review
+// Check if Ayah is due or fading
 export function isAyahDue(id, track) {
   const st = S.stats[id]?.[track];
-  if (!st || !st.last) return true; // never tested is due
+  if (!st || !st.last) return true;
   const strVal = calculateStrength(id, track);
-  return strVal === null || strVal < 85;
+  return strVal === null || strVal < 70;
 }
 
-// Flatten database to individual ayahs
+// Get Flat list of all ayahs from loaded Quran dataset
 export function getFlatAyahs() {
   const list = [];
-  BANK.forEach(c => {
-    c.surahs.forEach(s => {
-      s.ayahs.forEach((ay, idx) => {
-        list.push({
-          s,
-          id: idOf(s.n, idx),
-          ai: idx,
-          ar: ay[0],
-          en: ay[1],
-          catId: c.id
-        });
+  for (const sNum in QURAN_DATA) {
+    const s = QURAN_DATA[sNum];
+    s.ayahs.forEach((ay, idx) => {
+      list.push({
+        s,
+        id: idOf(s.n, idx),
+        ai: idx,
+        ar: ay.ar,
+        en: ay.en
       });
     });
-  });
+  }
   return list;
 }
 
-// Filter flat ayahs to memorized ones
 export function getMemorizedAyahs() {
-  return getFlatAyahs().filter(x => S.memorized[x.s.n]);
+  return getFlatAyahs().filter(x => isSurahMemorized(x.s.n));
+}
+
+export function isSurahMemorized(sNum) {
+  return !!S.memorized[sNum];
+}
+
+export function getSurahRollup(sNum) {
+  const surah = QURAN_DATA[sNum];
+  if (!surah) return { status: "Not Started", memCount: 0, total: 0, pct: 0 };
+  
+  const total = surah.ayahs.length;
+  let memCount = 0;
+  let totalStrengthSum = 0;
+  let testedCount = 0;
+  
+  surah.ayahs.forEach((_, idx) => {
+    const id = idOf(sNum, idx);
+    const comb = getCombinedStrength(id);
+    if (comb !== null) {
+      memCount++;
+      totalStrengthSum += comb;
+      testedCount++;
+    }
+  });
+  
+  const status = memCount === 0 ? "Not Started" : (memCount === total ? "Complete" : "Partial");
+  const avgStr = testedCount ? Math.round(totalStrengthSum / testedCount) : 0;
+  const pct = Math.round((memCount / total) * 100);
+  
+  return { status, memCount, total, pct, avgStr };
+}
+
+// Bulk mark entire surah as memorized
+export function bulkMarkSurahMemorized(sNum, level = 7) {
+  const surah = QURAN_DATA[sNum];
+  if (!surah) return;
+  
+  S.memorized[sNum] = true;
+  surah.ayahs.forEach((_, idx) => {
+    const id = idOf(sNum, idx);
+    setAyahRating(id, 'a', level);
+    setAyahRating(id, 'm', level);
+  });
+  saveState();
 }
 
 /* ============ PREFERENCES APPLIER ============ */
@@ -340,20 +220,19 @@ function applyPreferences() {
   const themeBtn = document.getElementById('themeBtn');
   if (themeBtn) {
     themeBtn.textContent = S.theme === 'dark' ? '☾' : '☀';
-    document.querySelector('meta[name="theme-color"]').setAttribute('content', S.theme === 'dark' ? '#070d0b' : '#f8f6f0');
+    document.querySelector('meta[name="theme-color"]').setAttribute('content', S.theme === 'dark' ? '#070d0b' : '#f4f6f1');
   }
   document.querySelectorAll('#zoomer button').forEach(b => {
     b.classList.toggle('on', parseFloat(b.dataset.z) === S.zoom);
   });
   
-  // Update version in footer
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.0.4 (updated 2026-07-21 17:47)`;
+    verDiv.textContent = `v1.1.0 (updated 2026-07-21 18:09)`;
   }
 }
 
-/* ============ DAILY STREAK MANAGEMENT ============ */
+/* ============ STREAK MANAGEMENT ============ */
 const TODAY_STRING = new Date().toDateString();
 function verifyDailyStreak() {
   if (S.today.day !== TODAY_STRING) {
@@ -364,35 +243,35 @@ function verifyDailyStreak() {
     if (S.lastDay === yesterdayString) {
       S.streak++;
     } else if (S.lastDay !== null) {
-      S.streak = 1; // streak broken
+      S.streak = 1;
     } else {
-      S.streak = 0; // first day
+      S.streak = 0;
     }
     S.lastDay = TODAY_STRING;
   }
   saveState();
 }
 
-/* ============ UI NAVIGATION ============ */
+/* ============ UI NAVIGATION (5 MAIN TABS) ============ */
 export function go(viewId) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const currentView = document.getElementById(`v-${viewId}`);
   if (currentView) currentView.classList.add('active');
   
-  document.querySelectorAll('.nav-btn').forEach(btn => {
+  document.querySelectorAll('nav .nav-btn').forEach(btn => {
     btn.classList.toggle('on', btn.dataset.v === viewId);
   });
   
   if (viewId === 'home') renderHome();
-  if (viewId === 'library') renderLibrary();
-  if (viewId === 'heat') renderHeat();
-  if (viewId === 'teach') renderTeach();
+  if (viewId === 'revise') renderRevise();
+  if (viewId === 'quran') renderQuran();
+  if (viewId === 'history') renderHistory();
+  if (viewId === 'insights') renderInsights();
   if (viewId === 'settings') renderSettings();
   
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
-// Universal UI Toast Alert
 export function toast(msg) {
   const toastBox = document.getElementById('toast');
   if (!toastBox) return;
@@ -404,13 +283,10 @@ export function toast(msg) {
   }, 2200);
 }
 
-/* ============ RENDER HOME VIEW ============ */
-function strengthColor(v) {
-  if (v === null) return 'var(--ink3)';
-  if (v >= 80) return 'var(--acc)';
-  if (v >= 55) return '#a2c94a'; // moderate green-yellow
-  if (v >= 30) return 'var(--warn)';
-  return 'var(--danger)';
+function getDaysAgo(st) {
+  if (!st || !st.last) return 'never';
+  const elapsedDays = (Date.now() - st.last) / 86400000;
+  return elapsedDays < 0.1 ? 'today' : `${elapsedDays.toFixed(1)}d ago`;
 }
 
 function cellBg(v) {
@@ -422,8 +298,8 @@ function cellBg(v) {
   return '#e05656';
 }
 
+/* ============ 1. RENDER HOME VIEW ============ */
 function renderHome() {
-  // Select daily wisdom
   const dayIndex = new Date().getDate() % WISDOM.length;
   const wisdom = WISDOM[dayIndex];
   
@@ -435,19 +311,17 @@ function renderHome() {
   if (text) text.textContent = wisdom.t;
   if (src) src.textContent = wisdom.s;
   
-  // Calculate strengths
   const memorized = getMemorizedAyahs();
-  let strongCount = 0;
+  const totalScopeAyahs = getFlatAyahs().length;
+  const coveragePct = totalScopeAyahs ? Math.round((memorized.length / totalScopeAyahs) * 100) : 0;
+  
   let weakCount = 0;
   let dueArabic = 0;
   let dueMeaning = 0;
   
   memorized.forEach(ayah => {
     const combinedStr = getCombinedStrength(ayah.id);
-    if (combinedStr !== null) {
-      if (combinedStr >= 70) strongCount++;
-      if (combinedStr < 40) weakCount++;
-    }
+    if (combinedStr !== null && combinedStr < 40) weakCount++;
     if (isAyahDue(ayah.id, 'a')) dueArabic++;
     if (isAyahDue(ayah.id, 'm')) dueMeaning++;
   });
@@ -457,10 +331,9 @@ function renderHome() {
   const weakBox = document.getElementById('stWeak');
   
   if (streakBox) streakBox.textContent = `${S.streak} 🔥`;
-  if (strongBox) strongBox.textContent = strongCount;
+  if (strongBox) strongBox.textContent = `${coveragePct}%`;
   if (weakBox) weakBox.textContent = weakCount;
   
-  // Goal progress ring
   const doneCount = S.today.day === TODAY_STRING ? S.today.done : 0;
   const goalTarget = S.dailyGoal || 10;
   
@@ -469,473 +342,357 @@ function renderHome() {
   
   if (ringTxt) ringTxt.textContent = `${doneCount}/${goalTarget}`;
   if (ringFg) {
-    const circum = 201; // 2 * pi * 32
+    const circum = 201;
     const offset = circum * (1 - Math.min(1, doneCount / goalTarget));
     ringFg.style.strokeDashoffset = offset;
   }
   
-  const goalTitle = document.getElementById('goalTitle');
-  const goalSub = document.getElementById('goalSub');
-  
-  if (goalTitle) {
-    goalTitle.textContent = doneCount >= goalTarget ? "Goal Complete ✓" : "Today's Revision";
-  }
-  if (goalSub) {
-    goalSub.textContent = doneCount >= goalTarget
-      ? "Beautiful consistency. Tomorrow the map shifts again."
-      : (weakCount > 0
-          ? `${weakCount} weak spot${weakCount > 1 ? 's' : ''} pulled to the front of your queue.`
-          : "Weak spots rise to the front — little and often.");
-  }
-  
   const pillAr = document.getElementById('pillAr');
   const pillEn = document.getElementById('pillEn');
-  
   if (pillAr) pillAr.textContent = `${dueArabic} Arabic due`;
   if (pillEn) pillEn.textContent = `${dueMeaning} meaning due`;
   
-  // Set CTA Sub
-  const ctaSub = document.getElementById('ctaSub');
-  const totalDue = dueArabic + dueMeaning;
-  if (ctaSub) {
-    if (!memorized.length) {
-      ctaSub.textContent = "Choose memorized surahs in Library first";
-    } else if (totalDue > 0) {
-      ctaSub.textContent = `${totalDue} checks waiting in practice queue`;
-    } else {
-      ctaSub.textContent = "All fresh — light maintenance checks";
+  // Render Surah Heatmap Grid (Surahs 63-114)
+  const grid = document.getElementById('surahHeatmapGrid');
+  if (grid) {
+    let gridHtml = '';
+    for (let sNum = 63; sNum <= 114; sNum++) {
+      const surah = QURAN_DATA[sNum];
+      if (!surah) continue;
+      
+      const rollup = getSurahRollup(sNum);
+      const isKnown = S.memorized[sNum];
+      
+      const aHue = (rollup.avgStr / 100 * 120).toFixed(1);
+      const stateLabel = rollup.avgStr < 35 && isKnown ? 'red' : 'green';
+      const hueStyles = `--h: ${aHue}; --mh: ${aHue};`;
+      
+      gridHtml += `
+        <button class="hm-cell ${isKnown ? 'reviewed' : 'untouched'}" data-state="${stateLabel}" style="${isKnown ? hueStyles : ''}" onclick="openSurahDetail(${sNum})">
+          <span style="font-size:0.65rem;opacity:0.75">#${sNum}</span>
+          <b style="font-size:0.85rem">${surah.name}</b>
+          <span style="font-size:0.6rem;color:var(--ink3)">${rollup.memCount}/${rollup.total} ayahs</span>
+          <span class="tip">
+            <span class="row"><b>${surah.name}</b> <span>${surah.ar}</span></span>
+            <span class="row"><b>Status:</b> <span>${rollup.status}</span></span>
+            <span class="row"><b>Avg Strength:</b> <span>${rollup.avgStr}%</span></span>
+            <span class="hint">Click to open Surah details</span>
+          </span>
+        </button>
+      `;
     }
+    grid.innerHTML = gridHtml;
   }
-  
-  // Navigation FAB Badge
-  const badge = document.getElementById('dueBdg');
-  if (badge) {
-    if (totalDue > 0) {
-      badge.style.display = 'grid';
-      badge.textContent = totalDue > 99 ? '99+' : totalDue;
-    } else {
-      badge.style.display = 'none';
-    }
-  }
-  
-  // Needs Attention List (Weakest 5 due or fade ayahs)
-  const dl = document.getElementById('dueList');
-  if (!dl) return;
-  
-  if (!memorized.length) {
-    dl.innerHTML = `
-      <div class="empty">
-        <span class="big">☾</span>
-        Nothing tracked yet.<br>Go to the <b>Library</b> tab to select the surahs you have memorized.
-      </div>`;
-    return;
-  }
-  
-  const attentionItems = memorized.map(ayah => {
-    return {
-      ...ayah,
-      combined: getCombinedStrength(ayah.id),
-      sa: calculateStrength(ayah.id, 'a'),
-      sm: calculateStrength(ayah.id, 'm')
-    };
-  })
-  .filter(item => item.combined === null || item.combined < 85)
-  .sort((a, b) => (a.combined ?? -1) - (b.combined ?? -1))
-  .slice(0, 5);
-  
-  if (attentionItems.length === 0) {
-    dl.innerHTML = `
-      <div class="empty">
-        <span class="big">✦</span>
-        Everything is fresh in memory!<br>The map is green. Take a rest, or share your knowledge in the Teach tab.
-      </div>`;
-    return;
-  }
-  
-  dl.innerHTML = attentionItems.map(item => {
-    const comb = item.combined;
-    const col = strengthColor(comb);
-    // Suggest track that is weaker
-    const trackName = (item.sa !== null && item.sa <= (item.sm ?? 999)) ? 'Recitation' : 'Meaning';
-    return `
-      <button class="due-item" onclick="openAyahSheet('${item.id}')">
-        <span class="strength-dot" style="background:${col}1c;color:${col}">${comb === null ? '—' : comb + '%'}</span>
-        <span style="min-width:0">
-          <span class="ref">${item.s.name} · Ayah ${item.ai + 1}</span>
-          <span class="ar-line">${item.ar}</span>
-        </span>
-        <span class="why">
-          <b style="color:${col}">${comb === null ? 'New' : (comb < 35 ? 'Fading' : 'Due')}</b>
-          <span>${trackName}</span>
-        </span>
-      </button>
-    `;
-  }).join('');
 }
 
-/* ============ RENDER LIBRARY VIEW ============ */
-let activeFilter = 'all';
-let searchQuery = '';
+/* ============ 2. RENDER REVISE VIEW (Intelligent Queue) ============ */
+function renderRevise() {
+  const container = document.getElementById('revisionQueueList');
+  if (!container) return;
+  
+  const memorized = getMemorizedAyahs();
+  if (!memorized.length) {
+    container.innerHTML = `
+      <div class="empty">
+        <span class="big">⚡</span>
+        Your revision queue is empty.<br>Go to the <b>Quran</b> tab and mark Surahs you have memorized to build your queue.
+      </div>
+    `;
+    return;
+  }
+  
+  // Sort by weakest memory strength
+  const queue = memorized.map(ayah => ({
+    ...ayah,
+    combined: getCombinedStrength(ayah.id) ?? 0,
+    sa: calculateStrength(ayah.id, 'a'),
+    sm: calculateStrength(ayah.id, 'm')
+  }))
+  .sort((a, b) => a.combined - b.combined)
+  .slice(0, 15);
+  
+  container.innerHTML = `
+    <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:0.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;">
+        ${queue.length} Queue Items Ready
+      </span>
+      <button class="cta" style="width:auto;padding:8px 16px;font-size:0.8rem;" onclick="startPracticeSession()">
+        Start Revision →
+      </button>
+    </div>
+    ` + queue.map(item => {
+      const col = cellBg(item.combined);
+      const ratingLvl = strengthToRating(item.combined);
+      const scaleObj = RATING_SCALE.find(r => r.level === ratingLvl) || RATING_SCALE[0];
+      
+      return `
+        <div class="due-item" onclick="openAyahSheet('${item.id}')">
+          <span class="strength-dot" style="background:${col}1c;color:${col}">${item.combined}%</span>
+          <span style="min-width:0">
+            <span class="ref">${item.s.name} · Ayah ${item.ai + 1}</span>
+            <span class="ar-line">${item.ar}</span>
+          </span>
+          <span class="why">
+            <span class="lvl-badge ${scaleObj.class}">${scaleObj.label}</span>
+          </span>
+        </div>
+      `;
+    }).join('');
+}
 
-function renderLibrary() {
-  const container = document.getElementById('libraryList');
+/* ============ 3. RENDER QURAN BROWSER VIEW ============ */
+let activeQuranFilter = 'all';
+let quranSearchQuery = '';
+
+function renderQuran() {
+  const container = document.getElementById('quranSurahList');
   if (!container) return;
   
   let html = '';
   
-  BANK.forEach(category => {
-    // Apply tab categorization filter
-    if (activeFilter !== 'all' && activeFilter !== 'known') {
-      if (category.id !== activeFilter) return;
+  for (let sNum = 63; sNum <= 114; sNum++) {
+    const surah = QURAN_DATA[sNum];
+    if (!surah) continue;
+    
+    // Apply filters
+    if (activeQuranFilter === 'juz28' && surah.juz !== 28) continue;
+    if (activeQuranFilter === 'juz29' && surah.juz !== 29) continue;
+    if (activeQuranFilter === 'juz30' && surah.juz !== 30) continue;
+    if (activeQuranFilter === 'known' && !S.memorized[sNum]) continue;
+    
+    if (quranSearchQuery.trim() !== '') {
+      const q = quranSearchQuery.toLowerCase();
+      const matchNum = surah.n.toString() === q;
+      const matchName = surah.name.toLowerCase().includes(q);
+      const matchAr = surah.ar.includes(q);
+      if (!matchNum && !matchName && !matchAr) continue;
     }
     
-    // Filter surahs inside category
-    const filteredSurahs = category.surahs.filter(surah => {
-      // Memorized filter
-      if (activeFilter === 'known' && !S.memorized[surah.n]) {
-        return false;
-      }
-      // Search text query
-      if (searchQuery.trim() !== '') {
-        const query = searchQuery.toLowerCase();
-        const numMatch = surah.n.toString() === query;
-        const nameMatch = surah.name.toLowerCase().includes(query);
-        const transMatch = surah.en.toLowerCase().includes(query);
-        const arMatch = surah.ar.includes(query);
-        return numMatch || nameMatch || transMatch || arMatch;
-      }
-      return true;
-    });
-    
-    if (filteredSurahs.length === 0) return;
+    const rollup = getSurahRollup(sNum);
+    const isKnown = S.memorized[sNum];
     
     html += `
-      <div class="cat-label">
-        <span class="dot"></span>
-        <h3>${category.cat}</h3>
-        <span class="line"></span>
+      <div class="surah-card">
+        <div class="surah-top">
+          <span class="surah-num">
+            <svg viewBox="0 0 40 40"><path d="M20 2 24 10 32 8 30 16 38 20 30 24 32 32 24 30 20 38 16 30 8 32 10 24 2 20 10 16 8 8 16 10Z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            ${surah.n}
+          </span>
+          <div class="surah-meta">
+            <b>${surah.name}</b>
+            <span>${surah.en} · ${surah.ayahs.length} Ayahs · Juz ${surah.juz}</span>
+          </div>
+          <span class="surah-arname">${surah.ar}</span>
+          <button class="know-toggle ${isKnown ? 'on' : ''}" onclick="toggleSurahMemorized(${surah.n})">
+            ${isKnown ? '✓ Known' : 'I know this'}
+          </button>
+        </div>
+        ${isKnown ? `
+          <div class="prog-track">
+            <div class="prog-fill" style="width:${rollup.pct}%"></div>
+          </div>
+          <div class="prog-labels">
+            <span>Progress: ${rollup.memCount}/${rollup.total} ayahs</span>
+            <span>Avg Strength: ${rollup.avgStr}%</span>
+          </div>
+        ` : ''}
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
+          <button class="btn-secondary" style="font-size:0.72rem;padding:4px 10px;" onclick="openSurahDetail(${surah.n})">
+            Ayah List &amp; Ratings →
+          </button>
+        </div>
       </div>
     `;
-    
-    filteredSurahs.forEach(surah => {
-      const isKnown = !!S.memorized[surah.n];
-      const ayahIds = surah.ayahs.map((_, idx) => idOf(surah.n, idx));
-      
-      let overallSum = 0;
-      let testedCount = 0;
-      let arabicSum = 0;
-      let arabicTested = 0;
-      let meaningSum = 0;
-      let meaningTested = 0;
-      
-      ayahIds.forEach(id => {
-        const aStrength = calculateStrength(id, 'a');
-        const mStrength = calculateStrength(id, 'm');
-        const comb = getCombinedStrength(id);
-        
-        if (aStrength !== null) { arabicSum += aStrength; arabicTested++; }
-        if (mStrength !== null) { meaningSum += mStrength; meaningTested++; }
-        if (comb !== null) { overallSum += comb; testedCount++; }
-      });
-      
-      const overallAvg = testedCount ? Math.round(overallSum / testedCount) : 0;
-      const arabicAvg = arabicTested ? Math.round(arabicSum / arabicTested) : 0;
-      const meaningAvg = meaningTested ? Math.round(meaningSum / meaningTested) : 0;
-      
-      html += `
-        <div class="surah-card">
-          <div class="surah-top">
-            <span class="surah-num">
-              <svg viewBox="0 0 40 40">
-                <path d="M20 2 24 10 32 8 30 16 38 20 30 24 32 32 24 30 20 38 16 30 8 32 10 24 2 20 10 16 8 8 16 10Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              ${surah.n}
-            </span>
-            <div class="surah-meta">
-              <b>${surah.name}</b>
-              <span>${surah.en} · ${surah.ayahs.length} Ayah${surah.ayahs.length > 1 ? 's' : ''}${surah.seg ? ' · Segmented' : ''}</span>
-            </div>
-            <span class="surah-arname">${surah.ar}</span>
-            <button class="know-toggle ${isKnown ? 'on' : ''}" data-sn="${surah.n}">
-              ${isKnown ? '✓ Known' : 'I know this'}
-            </button>
-          </div>
-          ${isKnown ? `
-            <div class="prog-track">
-              <div class="prog-fill" style="width:${overallAvg}%"></div>
-            </div>
-            <div class="prog-labels">
-              <span>Overall Strength</span>
-              <span>${overallAvg}%</span>
-            </div>
-            <div class="dual">
-              <span class="seg arab">AR<span class="bar"><i style="width:${arabicAvg}%"></i></span></span>
-              <span class="seg mean">EN<span class="bar"><i style="width:${meaningAvg}%"></i></span></span>
-            </div>
-          ` : ''}
-        </div>
-      `;
-    });
-  });
+  }
   
-  container.innerHTML = html || `<div class="empty" style="margin-top:20px"><span class="big">🔍</span>No surahs found matching "${searchQuery}".</div>`;
-  
-  // Bind click toggles
-  container.querySelectorAll('.know-toggle').forEach(btn => {
-    btn.onclick = (e) => {
-      const sn = parseInt(e.target.dataset.sn);
-      toggleSurahMemorized(sn);
-    };
-  });
+  container.innerHTML = html || `<div class="empty" style="margin-top:20px"><span class="big">🔍</span>No surahs found matching filter.</div>`;
 }
 
-function toggleSurahMemorized(sn) {
-  S.memorized[sn] = !S.memorized[sn];
+export function toggleSurahMemorized(sNum) {
+  if (S.memorized[sNum]) {
+    delete S.memorized[sNum];
+  } else {
+    bulkMarkSurahMemorized(sNum, 7);
+  }
   saveState();
-  renderLibrary();
+  renderQuran();
   renderHome();
-  toast(S.memorized[sn] ? "Surah added to memorized list — revision queue updated" : "Removed surah from memorized list");
+  toast(S.memorized[sNum] ? "Surah marked as memorized! ✦" : "Removed surah from memorized tracking");
 }
 
-/* ============ RENDER HEAT MAP VIEW ============ */
-function getDaysAgo(st) {
-  if (!st || !st.last) return 'never';
-  const elapsedDays = (Date.now() - st.last) / 86400000;
-  return elapsedDays < 0.1 ? 'today' : `${elapsedDays.toFixed(1)}d ago`;
+/* ============ 4. RENDER HISTORY VIEW (Logs) ============ */
+function renderHistory() {
+  const container = document.getElementById('historyLogList');
+  if (!container) return;
+  
+  if (!S.logs || S.logs.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <span class="big">📖</span>
+        No recitation logs recorded yet.<br>Click <b>"Log a Recitation Session"</b> above to record who you recited to.
+      </div>
+    `;
+    return;
+  }
+  
+  container.innerHTML = S.logs.map(log => `
+    <div class="log-item">
+      <div>
+        <span class="who">Recited to: ${log.who}</span>
+        <div style="font-size:0.85rem;font-weight:700;margin-top:4px;color:var(--ink)">${log.notes}</div>
+        <small style="font-size:0.68rem;color:var(--ink3)">${log.date}</small>
+      </div>
+    </div>
+  `).join('');
 }
 
-function renderHeat() {
-  const wrap = document.getElementById('heatWrap');
-  if (!wrap) return;
+/* ============ 5. RENDER INSIGHTS VIEW (Analytics) ============ */
+function renderInsights() {
+  const container = document.getElementById('insightsContent');
+  if (!container) return;
   
-  let html = '';
+  const memorized = getMemorizedAyahs();
+  const totalScope = getFlatAyahs().length;
+  const coveragePct = totalScope ? Math.round((memorized.length / totalScope) * 100) : 0;
   
-  BANK.forEach(category => {
-    category.surahs.forEach(surah => {
-      if (!S.memorized[surah.n]) return;
-      
-      let sumStrength = 0;
-      let count = 0;
-      
-      const cells = surah.ayahs.map((_, idx) => {
-        const id = idOf(surah.n, idx);
-        const comb = getCombinedStrength(id);
+  // Rating breakdown distribution
+  const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 };
+  memorized.forEach(ayah => {
+    const comb = getCombinedStrength(ayah.id);
+    const r = strengthToRating(comb);
+    dist[r]++;
+  });
+  
+  container.innerHTML = `
+    <div class="insight-card">
+      <h3 style="font-size:0.95rem;font-weight:800;">MVP Range Coverage (Surahs 63–114)</h3>
+      <div style="font-size:2rem;font-weight:800;color:var(--acc);margin:10px 0 4px;">${coveragePct}%</div>
+      <p style="font-size:0.78rem;color:var(--ink2);line-height:1.5;">${memorized.length} of ${totalScope} verses tracked across Juz 28–30.</p>
+    </div>
+    
+    <div class="insight-card">
+      <h3 style="font-size:0.95rem;font-weight:800;">Strength Distribution (9-Point Scale)</h3>
+      <div class="chart-bar-container">
+        ${RATING_SCALE.map(r => {
+          const cnt = dist[r.level] || 0;
+          const barPct = memorized.length ? Math.round((cnt / memorized.length) * 100) : 0;
+          return `
+            <div class="chart-row">
+              <span class="lbl">${r.label}</span>
+              <div class="track"><i style="width:${barPct}%;"></i></div>
+              <span style="width:30px;text-align:right;">${cnt}</span>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* ============ 6. RENDER SETTINGS VIEW ============ */
+function renderSettings() {
+  const goalSelect = document.getElementById('goalSelect');
+  const cycleSelect = document.getElementById('cycleSelect');
+  
+  if (goalSelect) goalSelect.value = S.dailyGoal || 10;
+  if (cycleSelect) cycleSelect.value = S.cycleDays || 30;
+}
+
+/* ============ AYAH RATING DETAIL DIALOG ============ */
+export function openSurahDetail(sNum) {
+  const surah = QURAN_DATA[sNum];
+  if (!surah) return;
+  
+  const content = document.getElementById('ayahSheetContent');
+  if (!content) return;
+  
+  content.innerHTML = `
+    <div class="grab"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <span class="ref">${surah.name} · Surah ${surah.n}</span>
+      <button class="know-toggle ${S.memorized[sNum] ? 'on' : ''}" onclick="toggleSurahMemorized(${surah.n}); openSurahDetail(${surah.n});">
+        ${S.memorized[sNum] ? '✓ Known' : 'I know this entire Surah'}
+      </button>
+    </div>
+    <h2 style="font-size:1.3rem;font-weight:800;margin-top:10px;">${surah.name} <span class="ar">${surah.ar}</span></h2>
+    <p style="font-size:0.78rem;color:var(--ink2);margin-bottom:16px;">${surah.en} · ${surah.ayahs.length} Ayahs · Juz ${surah.juz}</p>
+    
+    <div class="ayah-list-detail">
+      ${surah.ayahs.map((ay, idx) => {
+        const id = idOf(sNum, idx);
         const aStr = calculateStrength(id, 'a');
         const mStr = calculateStrength(id, 'm');
+        const aLvl = strengthToRating(aStr);
+        const mLvl = strengthToRating(mStr);
         
-        if (comb !== null) {
-          sumStrength += comb;
-          count++;
-        }
-        
-        if (aStr === null && mStr === null) {
-          return `
-            <button class="hm-cell untouched" data-id="${id}" aria-label="Ayah ${idx + 1} of Surah ${surah.name}, Untested">
-              ${idx + 1}
-            </button>
-          `;
-        } else {
-          const aHue = aStr !== null ? (aStr / 100 * 120).toFixed(1) : 120;
-          const mHue = mStr !== null ? (mStr / 100 * 120).toFixed(1) : 120;
-          
-          const aStat = S.stats[id]?.a;
-          const mStat = S.stats[id]?.m;
-          
-          const aAgo = getDaysAgo(aStat);
-          const mAgo = getDaysAgo(mStat);
-          
-          const hueStyles = `--h: ${aHue}; --mh: ${mHue};`;
-          
-          // Breathing alarm when Arabic recall strength is < 33%
-          const stateLabel = (aStr !== null && aStr < 33) ? 'red' : 'green';
-          
-          return `
-            <button class="hm-cell reviewed" data-state="${stateLabel}" style="${hueStyles}" data-id="${id}" aria-label="Ayah ${idx + 1} of Surah ${surah.name}, Recitation: ${aStr !== null ? aStr + '%' : 'untested'}, Meaning: ${mStr !== null ? mStr + '%' : 'untested'}">
-              ${idx + 1}
-              ${mStr !== null ? `<span class="mdot"></span>` : ''}
-              <span class="tip">
-                <span class="row"><b>Arabic:</b> <span>${aStr !== null ? aStr + '%' : '—'} · ${aAgo}</span></span>
-                <span class="row"><b>Meaning:</b> <span>${mStr !== null ? mStr + '%' : '—'} · ${mAgo}</span></span>
-                <span class="hint">Click for details &amp; review</span>
-              </span>
-            </button>
-          `;
-        }
-      }).join('');
-      
-      const averageStr = count ? Math.round(sumStrength / count) : 0;
-      
-      html += `
-        <div class="hm-surah">
-          <div class="hm-head">
-            <b>${surah.name} <span style="font-weight:600;color:var(--ink3)">· ${surah.ar}</span></b>
-            <span>${averageStr}% alive</span>
+        return `
+          <div style="padding:14px 0;border-bottom:1px solid var(--line);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:0.75rem;font-weight:800;color:var(--gold);">Ayah ${idx + 1}</span>
+              <div style="display:flex;gap:6px;">
+                <span class="lvl-badge lvl-${aLvl}">AR: Lvl ${aLvl}</span>
+                <span class="lvl-badge lvl-${mLvl}">EN: Lvl ${mLvl}</span>
+              </div>
+            </div>
+            <div class="ar-big" style="font-size:1.35rem;line-height:2;margin:8px 0;">${ay.ar}</div>
+            <div class="en-big" style="font-size:0.85rem;">${ay.en}</div>
+            
+            <!-- 9-Point Scale Quick Selector -->
+            <div style="margin-top:10px;">
+              <small style="font-size:0.65rem;font-weight:800;color:var(--ink3);text-transform:uppercase;">Rate Recitation (Arabic)</small>
+              <div style="display:flex;gap:4px;margin-top:4px;overflow-x:auto;padding-bottom:4px;">
+                ${RATING_SCALE.map(r => `
+                  <button style="padding:4px 8px;font-size:0.65rem;border-radius:6px;background:var(--bg2);border:1px solid var(--line);font-weight:800;" onclick="setAyahRating('${id}','a',${r.level}); openSurahDetail(${sNum});">
+                    ${r.level}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
           </div>
-          <div class="hm-grid">${cells}</div>
-        </div>
-      `;
-    });
-  });
-  
-  wrap.innerHTML = html || `
-    <div class="empty" style="margin-top:20px">
-      <span class="big">▦</span>
-      No active heat map.<br>Mark the surahs you've memorized in the <b>Library</b> to see your heat map bloom.
-    </div>`;
-  
-  // Bind click handlers to cells
-  wrap.querySelectorAll('.hm-cell').forEach(cell => {
-    cell.onclick = () => {
-      openAyahSheet(cell.dataset.id);
-    };
-  });
-}
-
-/* ============ AYAH DETAIL BOTTOM SHEET ============ */
-export function openAyahSheet(id) {
-  const flat = getFlatAyahs();
-  const ayah = flat.find(x => x.id === id);
-  if (!ayah) return;
-  
-  const aStr = calculateStrength(id, 'a');
-  const mStr = calculateStrength(id, 'm');
-  
-  const generateMeter = (label, strengthVal, typeKey) => {
-    const statsBlock = S.stats[id]?.[typeKey];
-    let nextStr = 'Not yet tested';
-    if (statsBlock && statsBlock.last) {
-      if (statsBlock.iv < 1) {
-        nextStr = `In ${Math.max(1, Math.round(statsBlock.iv * 24))} hours`;
-      } else {
-        const roundedDays = Math.round(statsBlock.iv);
-        nextStr = `In ${roundedDays} day${roundedDays !== 1 ? 's' : ''}`;
-      }
-    }
-    const color = strengthColor(strengthVal);
-    
-    return `
-      <div class="meter">
-        <small>${label}</small>
-        <b style="color:${color}">${strengthVal === null ? '—' : strengthVal + '%'}</b>
-        <div class="bar">
-          <i style="width:${strengthVal ?? 0}%;background:${color}"></i>
-        </div>
-        <span class="nxt">Due: ${nextStr}</span>
-      </div>
-    `;
-  };
-  
-  const sheetContent = document.getElementById('ayahSheetContent');
-  if (sheetContent) {
-    sheetContent.innerHTML = `
-      <div class="grab"></div>
-      <span class="ref">${ayah.s.name} · Ayah ${ayah.ai + 1}</span>
-      <div class="ar-big">${ayah.ar}</div>
-      <div class="en-big">${ayah.en}</div>
-      <div class="meter-row">
-        ${generateMeter('Recitation', aStr, 'a')}
-        ${generateMeter('Translation', mStr, 'm')}
-      </div>
-      <button class="cta" style="margin-top:2px" id="btnSheetReview">
-        <span>Review Now</span>
-        <span class="arrow">→</span>
-      </button>
-    `;
-    
-    document.getElementById('btnSheetReview').onclick = () => {
-      const dlg = document.getElementById('dlgAyahDetail');
-      if (dlg) dlg.close();
-      launchSingleAyahPractice(id);
-    };
-  }
+        `;
+      }).join('')}
+    </div>
+  `;
   
   const dlg = document.getElementById('dlgAyahDetail');
   if (dlg) dlg.showModal();
 }
 
-function launchSingleAyahPractice(id) {
-  const flat = getFlatAyahs();
-  const ayah = flat.find(x => x.id === id);
-  if (!ayah) return;
-  
-  // Custom session parameters for single ayah
-  practiceQueue = [{ ...ayah, combined: getCombinedStrength(ayah.id) ?? -1 }];
-  practiceIndex = 0;
-  practiceMode = 'dual';
-  currentPhase = 'a';
-  sessionStats = { a: 0, m: 0, againCount: 0 };
-  
-  verifyDailyStreak();
-  document.getElementById('practice').classList.add('open');
-  renderPracticeCard();
+export function openAyahSheet(id) {
+  const parts = id.split(':');
+  if (parts.length === 2) {
+    openSurahDetail(parseInt(parts[0]));
+  }
 }
 
-/* ============ PRACTICE SESSION LOGIC ============ */
+/* ============ PRACTICE RUNNER ============ */
 let practiceQueue = [];
 let practiceIndex = 0;
-let practiceMode = 'dual'; // 'dual' | 'arabic' | 'meaning'
-let currentPhase = 'a';    // 'a' (recite) | 'm' (meaning)
-let sessionStats = { a: 0, m: 0, againCount: 0 };
-let currentSessionSize = 10;
+let practiceMode = 'dual';
 
 export function openSessionConfig() {
   const memorized = getMemorizedAyahs();
   if (!memorized.length) {
-    toast("Mark memorized surahs in Library first");
-    go('library');
+    toast("Mark memorized surahs in Quran tab first");
+    go('quran');
     return;
   }
-  
-  // Build queue to check if anything is due
-  const dueList = memorized.filter(x => isAyahDue(x.id, 'a') || isAyahDue(x.id, 'm'));
-  if (dueList.length === 0) {
-    toast("Everything is fresh! Running a light reinforcement session.");
-  }
-  
   const dlg = document.getElementById('dlgSessionConfig');
   if (dlg) dlg.showModal();
 }
 
-function buildRevisionQueue(size) {
-  const memorized = getMemorizedAyahs();
-  // Filter due ayahs
-  const dueItems = memorized.filter(x => isAyahDue(x.id, 'a') || isAyahDue(x.id, 'm'))
-    .map(x => ({ ...x, combined: getCombinedStrength(x.id) ?? -1 }));
-  
-  // Sort weakest first
-  dueItems.sort((a, b) => a.combined - b.combined);
-  
-  let queue = dueItems.slice(0, size);
-  
-  // If queue is not full, fill with other weak/fading/least tested memorized items
-  if (queue.length < size) {
-    const existingIds = new Set(queue.map(q => q.id));
-    const extraItems = memorized.filter(x => !existingIds.has(x.id))
-      .map(x => ({ ...x, combined: getCombinedStrength(x.id) ?? -1 }));
-    // Sort so weakest is first
-    extraItems.sort((a, b) => a.combined - b.combined);
-    queue = queue.concat(extraItems.slice(0, size - queue.length));
-  }
-  
-  return queue;
-}
-
 function startPracticeSession() {
-  // Read config settings
   const activeSizeBtn = document.querySelector('#sessSizeSelect button.active');
-  const activeModeBtn = document.querySelector('#sessModeSelect button.active');
-  
   const size = activeSizeBtn ? parseInt(activeSizeBtn.dataset.val) : 10;
-  practiceMode = activeModeBtn ? activeModeBtn.dataset.val : 'dual';
   
-  practiceQueue = buildRevisionQueue(size);
+  const memorized = getMemorizedAyahs();
+  practiceQueue = memorized.map(x => ({ ...x, combined: getCombinedStrength(x.id) ?? 0 }))
+    .sort((a, b) => a.combined - b.combined)
+    .slice(0, size);
+    
   practiceIndex = 0;
-  currentPhase = practiceMode === 'meaning' ? 'm' : 'a';
-  sessionStats = { a: 0, m: 0, againCount: 0 };
-  
   verifyDailyStreak();
   
-  // Close configuration dialog
   const dlg = document.getElementById('dlgSessionConfig');
   if (dlg) dlg.close();
   
@@ -946,9 +703,7 @@ function startPracticeSession() {
 export function endSession(finished) {
   document.getElementById('practice').classList.remove('open');
   renderHome();
-  if (finished !== false) {
-    toast("Practice session successfully saved! ✦");
-  }
+  if (finished !== false) toast("Session completed! ✦");
 }
 
 function renderPracticeCard() {
@@ -962,39 +717,20 @@ function renderPracticeCard() {
   if (pFill) pFill.style.width = `${(practiceIndex / total) * 100}%`;
   if (pCount) pCount.textContent = `${practiceIndex + 1}/${total}`;
   
-  const isArabicPhase = currentPhase === 'a';
-  
   if (pBody) {
     pBody.innerHTML = `
-      <span class="phase-chip ${isArabicPhase ? 'recite' : 'mean'}">
-        ${isArabicPhase ? '① Recite from Memory' : '② Recall Translation Meaning'}
-      </span>
+      <span class="phase-chip recite">① Recite from Memory</span>
       <div class="p-card">
         <span class="p-ref">${ayah.s.name} · Ayah ${ayah.ai + 1}</span>
-        ${isArabicPhase ? `
-          <p class="p-prompt">Close your eyes. Recite the ayah aloud from memory — then tap to check.</p>
-          <div class="hidden-text" id="hidTextReveal">
-            <span class="tap">
-              <span class="eye">◉</span>
-              ${L.tapReveal} Arabic
-            </span>
-          </div>
-        ` : `
-          <div class="ar-big" style="margin-top:16px;">${ayah.ar}</div>
-          <p class="p-prompt">What does this ayah mean? Recite the translation in your own words — then tap to check.</p>
-          <div class="hidden-text" id="hidTextReveal">
-            <span class="tap">
-              <span class="eye">◈</span>
-              ${L.tapReveal} Meaning
-            </span>
-          </div>
-        `}
+        <p class="p-prompt">Recite aloud from memory — then tap to check.</p>
+        <div class="hidden-text" id="hidTextReveal">
+          <span class="tap"><span class="eye">◉</span>Tap to reveal Arabic</span>
+        </div>
       </div>
       <div class="grade-row" id="practiceGradeRow" style="opacity:0.35;pointer-events:none">
-        ${L.grades.map((gradeLabel, idx) => `
-          <button class="grade g${idx + 1}" data-g="${idx + 1}">
-            ${gradeLabel}
-            <small>${L.gradeSub[idx]}</small>
+        ${RATING_SCALE.slice(0, 4).map((r, i) => `
+          <button class="grade g${i + 1}" onclick="gradePractice(${r.level})">
+            ${r.label}
           </button>
         `).join('')}
       </div>
@@ -1006,522 +742,189 @@ function renderPracticeCard() {
     if (revealTrigger) {
       revealTrigger.onclick = () => {
         revealTrigger.classList.add('revealed');
-        if (!isArabicPhase) {
-          revealTrigger.classList.add('gold');
-        }
-        
-        revealTrigger.innerHTML = isArabicPhase
-          ? `<span class="reveal-ar">${ayah.ar}</span>`
-          : `<span class="reveal-en">${ayah.en}</span>`;
-        
-        // Unlock grading
+        revealTrigger.innerHTML = `<span class="reveal-ar">${ayah.ar}</span>`;
         if (gradeRow) {
           gradeRow.style.opacity = '1';
           gradeRow.style.pointerEvents = 'auto';
         }
       };
     }
-    
-    // Bind grades buttons
-    if (gradeRow) {
-      gradeRow.querySelectorAll('button').forEach(btn => {
-        btn.onclick = (e) => {
-          const rating = parseInt(btn.dataset.g || btn.closest('button').dataset.g);
-          gradePractice(rating);
-        };
-      });
-    }
   }
 }
 
-function gradePractice(rating) {
+function gradePractice(level) {
   const ayah = practiceQueue[practiceIndex];
+  setAyahRating(ayah.id, 'a', level);
+  setAyahRating(ayah.id, 'm', level);
   
-  gradeAyah(ayah.id, currentPhase, rating);
-  
-  if (rating === 1) sessionStats.againCount++;
-  sessionStats[currentPhase]++;
-  
-  // Track daily tasks
   S.today.done++;
   saveState();
   
-  // Handle tracks transitions
-  if (practiceMode === 'dual' && currentPhase === 'a') {
-    currentPhase = 'm';
-    renderPracticeCard();
-    return;
-  }
-  
-  // Move to next ayah card
-  currentPhase = practiceMode === 'meaning' ? 'm' : 'a';
-  
   if (practiceIndex + 1 >= practiceQueue.length) {
-    renderPracticeSummary();
+    endSession(true);
   } else {
     practiceIndex++;
     renderPracticeCard();
   }
 }
 
-function renderPracticeSummary() {
-  const pFill = document.getElementById('pFill');
-  const pCount = document.getElementById('pCount');
-  const pBody = document.getElementById('pBody');
-  
-  if (pFill) pFill.style.width = '100%';
-  if (pCount) pCount.textContent = '✓';
-  
-  const dailyDone = S.today.day === TODAY_STRING ? S.today.done : 0;
-  const goalTarget = S.dailyGoal || 10;
-  
-  if (pBody) {
-    pBody.innerHTML = `
-      <div class="summary">
-        <span class="moon">${sessionStats.againCount ? '🌱' : '☾'}</span>
-        <h2>${sessionStats.againCount ? "Patience Reinforces the Root" : "Session Completed"}</h2>
-        <p>
-          ${sessionStats.againCount 
-            ? `${sessionStats.againCount} ayah${sessionStats.againCount > 1 ? 's' : ''} flagged for review soon. That is the system doing its work. "Indeed, Allah is with the patient."`
-            : "Every revision strengthens the heart. What is solid today will wait longer before asking for you again."}
-        </p>
-        <div class="sum-stats">
-          <div class="stat"><b class="strong">${sessionStats.a}</b><span>Recitations</span></div>
-          <div class="stat"><b style="color:var(--gold)">${sessionStats.m}</b><span>Meanings</span></div>
-        </div>
-        <button class="cta" onclick="endSession()">
-          <span>Return · ${Math.min(dailyDone, goalTarget)}/${goalTarget} Goal Check${Math.min(dailyDone, goalTarget) !== 1 ? 's' : ''}</span>
-          <span class="arrow">✓</span>
-        </button>
-      </div>
-    `;
-  }
-}
-
-/* ============ RENDER TEACH VIEW ============ */
-function renderTeach() {
-  const taughtCountSpan = document.getElementById('taughtCount');
-  const teachList = document.getElementById('teachList');
-  if (!teachList) return;
-  
-  const memorized = getMemorizedAyahs();
-  // Filter ayahs that are strong enough to teach (strength >= 60%)
-  const teachable = memorized.map(ayah => {
-    return {
-      ...ayah,
-      combined: getCombinedStrength(ayah.id)
-    };
-  })
-  .filter(item => item.combined !== null && item.combined >= 60)
-  .sort((a, b) => b.combined - a.combined)
-  .slice(0, 3);
-  
-  const taughtKeys = Object.keys(S.taught);
-  const countShared = taughtKeys.length;
-  if (taughtCountSpan) {
-    taughtCountSpan.textContent = countShared > 0 ? `${countShared} shared so far ✦` : "plant your first seed";
-  }
-  
-  if (teachable.length === 0) {
-    teachList.innerHTML = `
-      <div class="empty">
-        <span class="big">❖</span>
-        No ayahs strong enough yet.<br>Practice and strengthen your memorization above 60% strength to share them with others.
-      </div>
-    `;
-    return;
-  }
-  
-  teachList.innerHTML = teachable.map(item => {
-    const isSharedToday = S.taught[item.id] === TODAY_STRING;
-    return `
-      <div class="teach-card">
-        <span class="t-ref">${item.s.name} · Ayah ${item.ai + 1} — ${item.combined}% Strong</span>
-        <div class="t-ar">${item.ar}</div>
-        <div class="t-en">${item.en}</div>
-        <button class="taught-btn ${isSharedToday ? 'done' : ''}" data-id="${item.id}" ${isSharedToday ? 'disabled' : ''}>
-          ${isSharedToday ? '✓ Shared today — barakAllahu feek' : 'I taught this to someone today'}
-        </button>
-      </div>
-    `;
-  }).join('');
-  
-  // Bind taught button clicks
-  teachList.querySelectorAll('.taught-btn').forEach(btn => {
-    btn.onclick = () => {
-      const id = btn.dataset.id;
-      recordTaughtAyah(id, btn);
-    };
-  });
-}
-
-function recordTaughtAyah(id, btn) {
-  if (S.taught[id] === TODAY_STRING) return;
-  S.taught[id] = TODAY_STRING;
-  
-  // Teaching reinforces learning: extend intervals of both tracks by 30%
-  const aStat = getStatBlock(id, 'a');
-  const mStat = getStatBlock(id, 'm');
-  
-  if (aStat && aStat.last) aStat.iv = Math.min(95, aStat.iv * 1.3);
-  if (mStat && mStat.last) mStat.iv = Math.min(95, mStat.iv * 1.3);
-  
-  saveState();
-  
-  btn.classList.add('done');
-  btn.setAttribute('disabled', 'true');
-  btn.textContent = '✓ Shared today — barakAllahu feek';
-  
-  toast("Teaching has reinforced your memory! Intervals extended. ✦");
-  setTimeout(() => {
-    renderTeach();
-    renderHome();
-  }, 1000);
-}
-
-/* ============ RENDER SETTINGS VIEW ============ */
-function renderSettings() {
-  const goalSelect = document.getElementById('goalSelect');
-  if (goalSelect) {
-    goalSelect.value = S.dailyGoal || 10;
-  }
-}
-
+/* ============ DEVELOPER TOOLS ============ */
 function simulateDay() {
   let count = 0;
   for (const id in S.stats) {
-    if (S.stats[id].a && S.stats[id].a.last) {
-      S.stats[id].a.last -= 86400000;
-      count++;
-    }
-    if (S.stats[id].m && S.stats[id].m.last) {
-      S.stats[id].m.last -= 86400000;
-      count++;
-    }
+    if (S.stats[id].a && S.stats[id].a.last) { S.stats[id].a.last -= 86400000; count++; }
+    if (S.stats[id].m && S.stats[id].m.last) { S.stats[id].m.last -= 86400000; count++; }
   }
   saveState();
   renderHome();
-  renderHeat();
-  toast(`Simulated +1 day. Decayed memory on ${count} active tracks. ⚡`);
+  toast(`Simulated +1 day. Decayed ${count} active tracks. ⚡`);
 }
 
-// Export state as JSON file
 function exportState() {
   const dataStr = JSON.stringify(S, null, 2);
   const blob = new Blob([dataStr], { type: "application/json" });
   const url = URL.createObjectURL(blob);
-  
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `hifzflow_backup_${new Date().toISOString().split('T')[0]}.json`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
-  toast("Progress backup file downloaded successfully! ✦");
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `hifzflow_backup_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  toast("Progress backup file downloaded! ✦");
 }
 
-// Import state from JSON file
-function importState(event) {
-  const file = event.target.files[0];
+function importState(e) {
+  const file = e.target.files[0];
   if (!file) return;
-  
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = (evt) => {
     try {
-      const parsed = JSON.parse(e.target.result);
-      if (parsed && typeof parsed === 'object') {
-        // Validate required keys
-        if (parsed.memorized && parsed.stats) {
-          S = { ...S, ...parsed };
-          saveState();
-          applyPreferences();
-          renderSettings();
-          toast("Progress successfully imported! ✦");
-          
-          setTimeout(() => {
-            go('home');
-          }, 1200);
-        } else {
-          toast("Invalid backup file: missing core records");
-        }
+      const parsed = JSON.parse(evt.target.result);
+      if (parsed) {
+        S = { ...S, ...parsed };
+        saveState();
+        applyPreferences();
+        renderHome();
+        toast("Progress successfully imported! ✦");
       }
     } catch (err) {
       toast("Error parsing backup JSON file");
-      console.error(err);
     }
   };
   reader.readAsText(file);
 }
 
-// Wipe state and start fresh
 function resetApplication() {
-  if (confirm("WARNING: This will wipe all your memorized surahs, repetition history, and daily streaks. This action cannot be undone. Are you absolutely sure?")) {
+  if (confirm("Reset all hifz records forever?")) {
     localStorage.removeItem(KEY);
-    S = {
-      memorized: {},
-      stats: {},
-      taught: {},
-      streak: 0,
-      lastDay: null,
-      today: { day: "", done: 0 },
-      theme: "dark",
-      zoom: 1,
-      onboarded: false,
-      dailyGoal: 10
-    };
-    saveState();
-    
-    toast("Application reset. Starting fresh.");
-    setTimeout(() => {
-      window.location.reload();
-    }, 1200);
+    window.location.reload();
   }
 }
 
-/* ============ ONBOARDING PANEL ============ */
-function renderOnboardList() {
-  const obList = document.getElementById('obList');
-  if (!obList) return;
-  
-  obList.innerHTML = BANK.map(category => {
-    return `
-      <div class="cat-label">
-        <span class="dot"></span>
-        <h3>${category.cat}</h3>
-        <span class="line"></span>
-      </div>
-    ` + category.surahs.map(surah => {
-      const isKnown = !!S.memorized[surah.n];
-      return `
-        <div class="surah-card">
-          <div class="surah-top">
-            <span class="surah-num">
-              <svg viewBox="0 0 40 40">
-                <path d="M20 2 24 10 32 8 30 16 38 20 30 24 32 32 24 30 20 38 16 30 8 32 10 24 2 20 10 16 8 8 16 10Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-              ${surah.n}
-            </span>
-            <div class="surah-meta">
-              <b>${surah.name}</b>
-              <span>${surah.ayahs.length} Ayah${surah.ayahs.length > 1 ? 's' : ''}</span>
-            </div>
-            <span class="surah-arname">${surah.ar}</span>
-            <button class="know-toggle ${isKnown ? 'on' : ''}" data-sn="${surah.n}">
-              ${isKnown ? '✓ Known' : 'I know this'}
-            </button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }).join('');
-  
-  // Bind know toggles on onboarding
-  obList.querySelectorAll('.know-toggle').forEach(btn => {
-    btn.onclick = (e) => {
-      const sn = parseInt(e.target.dataset.sn);
-      S.memorized[sn] = !S.memorized[sn];
-      btn.classList.toggle('on', !!S.memorized[sn]);
-      btn.textContent = S.memorized[sn] ? '✓ Known' : 'I know this';
-      saveState();
-    };
-  });
-}
-
-window.finishOnboard = function() {
-  S.onboarded = true;
-  saveState();
-  const obOverlay = document.getElementById('onboard');
-  if (obOverlay) obOverlay.classList.remove('open');
-  go('home');
-  toast("Bismillah — Your revision map is ready! ✦");
-};
-
-/* ============ INTERACTIVE EVENT LISTENERS & SETUP ============ */
+/* ============ EVENT LISTENERS & BOOTSTRAP ============ */
 function setupEventListeners() {
-  // Nav buttons click
   document.querySelectorAll('nav .nav-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      go(btn.dataset.v);
-    });
+    btn.onclick = () => go(btn.dataset.v);
   });
   
-  // Floating practice FAB click
-  const navPracticeBtn = document.getElementById('navPracticeBtn');
-  if (navPracticeBtn) {
-    navPracticeBtn.onclick = () => {
-      openSessionConfig();
-    };
-  }
-  
-  // Home CTA start session
   const ctaStart = document.getElementById('ctaStart');
-  if (ctaStart) {
-    ctaStart.onclick = () => {
-      openSessionConfig();
-    };
-  }
+  if (ctaStart) ctaStart.onclick = () => openSessionConfig();
   
-  // Theme Toggle
   const themeBtn = document.getElementById('themeBtn');
   if (themeBtn) {
     themeBtn.onclick = () => {
       S.theme = S.theme === 'dark' ? 'light' : 'dark';
       saveState();
       applyPreferences();
-      toast(S.theme === 'dark' ? "Switched to Dark Mode" : "Switched to Light Mode");
     };
   }
   
-  // Text Size Scale (Zoom)
   document.querySelectorAll('#zoomer button').forEach(btn => {
     btn.onclick = () => {
       S.zoom = parseFloat(btn.dataset.z);
       saveState();
       applyPreferences();
-      toast(S.zoom > 1 ? "Text size enlarged" : `Zoom set to ${Math.round(S.zoom * 100)}%`);
     };
   });
   
-  // Copy daily quote to clipboard
-  const copyBtn = document.getElementById('shareWisdom');
-  if (copyBtn) {
-    copyBtn.onclick = () => {
-      const quoteText = document.getElementById('wisText').textContent;
-      const quoteSrc = document.getElementById('wisSrc').textContent;
-      const quoteTag = document.getElementById('wisTag').textContent;
-      
-      const fullShareText = `[${quoteTag}] ${quoteText} — ${quoteSrc}`;
-      navigator.clipboard.writeText(fullShareText).then(() => {
-        toast("Wisdom quote copied to clipboard! ✦");
-      }).catch(err => {
-        toast("Unable to copy to clipboard");
-      });
-    };
-  }
-  
-  // Library Search
   const libSearch = document.getElementById('libSearch');
   if (libSearch) {
     libSearch.oninput = (e) => {
-      searchQuery = e.target.value;
-      renderLibrary();
+      quranSearchQuery = e.target.value;
+      renderQuran();
     };
   }
   
-  // Library Category Chips Filters
   document.querySelectorAll('#libFilters .filter-btn').forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll('#libFilters .filter-btn').forEach(b => b.classList.remove('on'));
       btn.classList.add('on');
-      activeFilter = btn.dataset.filter;
-      renderLibrary();
+      activeQuranFilter = btn.dataset.filter;
+      renderQuran();
     };
   });
   
-  // Session Settings Size Options
-  document.querySelectorAll('#sessSizeSelect button').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('#sessSizeSelect button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    };
-  });
-  
-  // Session Settings Mode Options
-  document.querySelectorAll('#sessModeSelect button').forEach(btn => {
-    btn.onclick = () => {
-      document.querySelectorAll('#sessModeSelect button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-    };
-  });
-  
-  // Start session trigger
   const btnLaunch = document.getElementById('btnLaunchSession');
-  if (btnLaunch) {
-    btnLaunch.onclick = () => {
-      startPracticeSession();
-    };
-  }
+  if (btnLaunch) btnLaunch.onclick = () => startPracticeSession();
   
-  // Settings Change Target
-  const goalSelect = document.getElementById('goalSelect');
-  if (goalSelect) {
-    goalSelect.onchange = (e) => {
-      S.dailyGoal = parseInt(e.target.value);
-      saveState();
-      renderHome();
-      toast(`Daily check goal set to ${S.dailyGoal}`);
-    };
-  }
-  
-  // Settings Reset Button
-  const btnReset = document.getElementById('btnReset');
-  if (btnReset) {
-    btnReset.onclick = () => {
-      resetApplication();
-    };
-  }
-  
-  // Settings Import/Export
   const btnExport = document.getElementById('btnExport');
-  if (btnExport) {
-    btnExport.onclick = () => {
-      exportState();
-    };
-  }
+  if (btnExport) btnExport.onclick = () => exportState();
   
   const btnSimulateDay = document.getElementById('btnSimulateDay');
-  if (btnSimulateDay) {
-    btnSimulateDay.onclick = () => {
-      simulateDay();
+  if (btnSimulateDay) btnSimulateDay.onclick = () => simulateDay();
+  
+  const btnReset = document.getElementById('btnReset');
+  if (btnReset) btnReset.onclick = () => resetApplication();
+  
+  const btnAddLog = document.getElementById('btnAddLog');
+  if (btnAddLog) {
+    btnAddLog.onclick = () => {
+      const dlg = document.getElementById('dlgAddLog');
+      if (dlg) dlg.showModal();
     };
   }
   
-  const importInput = document.getElementById('importFile');
-  if (importInput) {
-    importInput.onchange = (e) => {
-      importState(e);
+  const btnSaveLog = document.getElementById('btnSaveLog');
+  if (btnSaveLog) {
+    btnSaveLog.onclick = () => {
+      const who = document.getElementById('logWhoInput').value.trim();
+      const notes = document.getElementById('logNotesInput').value.trim();
+      if (!who || !notes) { toast("Please enter details"); return; }
+      
+      if (!S.logs) S.logs = [];
+      S.logs.unshift({ date: new Date().toLocaleDateString(), who, notes });
+      saveState();
+      
+      const dlg = document.getElementById('dlgAddLog');
+      if (dlg) dlg.close();
+      renderHistory();
+      toast("Recitation log saved! ✦");
     };
   }
-  
-  // Close dialog on escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      const practiceView = document.getElementById('practice');
-      if (practiceView && practiceView.classList.contains('open')) {
-        endSession(false);
-      }
-    }
-  });
 }
 
-/* ============ APPLICATION BOOTSTRAP ============ */
-function boot() {
+async function boot() {
   loadState();
   applyPreferences();
   verifyDailyStreak();
   setupEventListeners();
   
+  await loadQuranDataset();
+  
   if (!S.onboarded) {
     const obOverlay = document.getElementById('onboard');
     if (obOverlay) obOverlay.classList.add('open');
-    renderOnboardList();
   } else {
     go('home');
   }
   
-  // Live re-tint/update active view every 30 seconds
   setInterval(() => {
     const activeBtn = document.querySelector('nav .nav-btn.on');
     if (activeBtn) {
       const viewId = activeBtn.dataset.v;
       if (viewId === 'home') renderHome();
-      if (viewId === 'heat') renderHeat();
     }
   }, 30000);
 }
 
-// Trigger initial boot load
 document.addEventListener('DOMContentLoaded', () => {
   boot();
 });

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#070d0b">
   <title>HifzFlow — Guard Your Memorization</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
@@ -32,9 +32,10 @@
     </div>
   </header>
 
-  <!-- HOME VIEW -->
+  <!-- 1. HOME VIEW (Surah Heatmap 63-114 & Featured Practice Card) -->
   <section class="view active pad" id="v-home">
     <div class="hero">
+      <!-- Daily Wisdom Nudge Card -->
       <div class="wisdom">
         <div class="tag-row">
           <span class="tag" id="wisTag">On Patience</span>
@@ -43,11 +44,15 @@
         <p id="wisText"></p>
         <span class="src" id="wisSrc"></span>
       </div>
+
+      <!-- Quick Stats -->
       <div class="stat-row">
-        <div class="stat" onclick="toast('Keep up the daily review to protect your streak!')"><b class="fire" id="stStreak">0 🔥</b><span>Day Streak</span></div>
-        <div class="stat" onclick="toast('Ayahs with memory strength >= 70%')"><b class="strong" id="stStrong">0</b><span>Strong</span></div>
-        <div class="stat" onclick="toast('Ayahs with memory strength < 40%')"><b id="stWeak" style="color:var(--danger)">0</b><span>Weak</span></div>
+        <div class="stat" onclick="toast('Daily review streak')"><b class="fire" id="stStreak">0 🔥</b><span>Day Streak</span></div>
+        <div class="stat" onclick="go('insights')"><b class="strong" id="stStrong">0%</b><span>Coverage</span></div>
+        <div class="stat" onclick="go('revise')"><b id="stWeak" style="color:var(--danger)">0</b><span>Weak Ayahs</span></div>
       </div>
+
+      <!-- Revision Goal Card -->
       <div class="goal-card">
         <div class="ring">
           <svg width="76" height="76">
@@ -65,42 +70,17 @@
           </div>
         </div>
       </div>
+
       <button class="cta" id="ctaStart">
         <span>Begin Session<span class="sub" id="ctaSub">Smart queue ready</span></span>
         <span class="arrow">→</span>
       </button>
     </div>
+
+    <!-- Surah Heatmap 63-114 -->
     <div class="sec-title">
-      <h2>Needs Attention</h2>
-      <button onclick="go('heat')">Memory map →</button>
-    </div>
-    <div id="dueList"></div>
-  </section>
-
-  <!-- LIBRARY VIEW -->
-  <section class="view pad" id="v-library">
-    <div style="margin-top:10px">
-      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Library</h2>
-      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Tap <b>“I know this”</b> for what you've memorized. Both tracks — recitation &amp; meaning — are watched separately.</p>
-    </div>
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="libSearch" placeholder="Search surahs by name, meaning or number...">
-    </div>
-    <div class="filter-bar" id="libFilters">
-      <button class="filter-btn on" data-filter="all">All Verses</button>
-      <button class="filter-btn" data-filter="short">Juz ʿAmma</button>
-      <button class="filter-btn" data-filter="core">Core Verses</button>
-      <button class="filter-btn" data-filter="known">Memorized Only</button>
-    </div>
-    <div id="libraryList" style="margin-top:10px"></div>
-  </section>
-
-  <!-- HEAT MAP VIEW -->
-  <section class="view pad" id="v-heat">
-    <div style="margin-top:10px">
-      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Memory Heat Map</h2>
-      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Every ayah, colored by how alive it is in memory. Colors fade as time passes without review.</p>
+      <h2>Memorization Heat Map (Surahs 63–114)</h2>
+      <button onclick="go('quran')">Browse All →</button>
     </div>
     <div class="legend">
       <span>Fading</span>
@@ -113,65 +93,84 @@
       <span class="cell untouched" style="width:18px;height:18px;border-radius:6px;background:var(--card2);border:1px solid var(--line)"></span>
       <span>New</span>
     </div>
-    <div id="heatWrap"></div>
+    <div id="surahHeatmapGrid" class="hm-grid" style="grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); margin-top:14px;"></div>
   </section>
 
-  <!-- TEACH VIEW -->
-  <section class="view pad" id="v-teach">
-    <div class="teach-hero">
-      <div class="ar-quote">خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ</div>
-      <p>"The best of you are those who learn the Qur'an and teach it." Teaching is the strongest form of revision — what you explain, you never forget.</p>
-      <small>Sahih al-Bukhari 5027</small>
+  <!-- 2. REVISE VIEW (Intelligent Revision Queue) -->
+  <section class="view pad" id="v-revise">
+    <div style="margin-top:10px">
+      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Intelligent Revision Queue</h2>
+      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Prioritizes your weakest verses first, enforces complete cycle coverage, and runs transition tests.</p>
     </div>
-    <div class="sec-title">
-      <h2>Ready to Teach</h2>
-      <span style="font-size:0.68rem;color:var(--ink3);font-weight:600" id="taughtCount">plant your first seed</span>
-    </div>
-    <div id="teachList"></div>
-    <div class="sec-title">
-      <h2>How to Teach Gently</h2>
-    </div>
-    <div class="tips">
-      <div class="tip"><span class="n">1</span>Recite the ayah slowly, then ask your listener to repeat it back to you — listening to yourself correct them is deep revision.</div>
-      <div class="tip"><span class="n">2</span>Explain the meaning in your own simple words. If you stumble, that's a weak spot — the app will schedule it.</div>
-      <div class="tip"><span class="n">3</span>One ayah a day is enough. Patience with others is patience with yourself.</div>
-    </div>
+    <div id="revisionQueueList" style="margin-top:16px;"></div>
   </section>
 
-  <!-- SETTINGS VIEW -->
+  <!-- 3. QURAN VIEW (Surah & Ayah Browser) -->
+  <section class="view pad" id="v-quran">
+    <div style="margin-top:10px">
+      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Quran Browser (63–114)</h2>
+      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Select any Surah to view its ayahs, rate Arabic recall vs. meaning, or mark whole Surahs as memorized.</p>
+    </div>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="libSearch" placeholder="Search Surah 63-114 by name or number...">
+    </div>
+    <div class="filter-bar" id="libFilters">
+      <button class="filter-btn on" data-filter="all">All (63-114)</button>
+      <button class="filter-btn" data-filter="juz28">Juz 28</button>
+      <button class="filter-btn" data-filter="juz29">Juz 29</button>
+      <button class="filter-btn" data-filter="juz30">Juz 30</button>
+      <button class="filter-btn" data-filter="known">Memorized</button>
+    </div>
+    <div id="quranSurahList" style="margin-top:14px"></div>
+  </section>
+
+  <!-- 4. HISTORY VIEW (Recitation Log) -->
+  <section class="view pad" id="v-history">
+    <div style="margin-top:10px">
+      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Recitation Log</h2>
+      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Track your recitation sessions: Who did you recite to? (Teacher, Imam, Friend, Family, or Self).</p>
+    </div>
+    <button class="cta" style="margin-top:14px;" id="btnAddLog">
+      <span>Log a Recitation Session</span>
+      <span class="arrow">+</span>
+    </button>
+    <div id="historyLogList" style="margin-top:18px;"></div>
+  </section>
+
+  <!-- 5. INSIGHTS VIEW (Analytics) -->
+  <section class="view pad" id="v-insights">
+    <div style="margin-top:10px">
+      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Memorization Analytics</h2>
+      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Visual insights into your memorization coverage, rating distribution, and weakness trends.</p>
+    </div>
+    <div id="insightsContent"></div>
+  </section>
+
+  <!-- 6. SETTINGS VIEW -->
   <section class="view pad" id="v-settings">
     <div style="margin-top:10px">
       <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Settings &amp; Backup</h2>
-      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Manage your local revision history, export data for safekeeping, or start fresh.</p>
+      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Configure revision cycle window, daily targets, backup JSON, or simulate days.</p>
     </div>
     
     <div class="sett-card">
-      <h3>Data Portability</h3>
+      <h3>Revision Preferences</h3>
       <div class="sett-row">
         <div>
-          <label>Export Progress</label>
-          <small>Download your hifz history as a backup JSON file.</small>
+          <label>Complete Coverage Cycle Window</label>
+          <small>Guarantees every verse is reviewed within this timeframe.</small>
         </div>
-        <button class="btn-secondary" id="btnExport">Export JSON</button>
+        <select id="cycleSelect" style="background:var(--bg2);border:1px solid var(--line);color:var(--ink);padding:6px;border-radius:6px;font-weight:700">
+          <option value="7">7 Days</option>
+          <option value="14">14 Days</option>
+          <option value="30" selected>30 Days</option>
+        </select>
       </div>
-      <div class="sett-row">
-        <div>
-          <label>Import Progress</label>
-          <small>Restore your progress from a previously saved JSON file.</small>
-        </div>
-        <div>
-          <input type="file" id="importFile" accept=".json" style="display:none">
-          <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Import JSON</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="sett-card" style="margin-top:16px;">
-      <h3>Advanced Settings</h3>
       <div class="sett-row">
         <div>
           <label>Daily Goal Target</label>
-          <small>Set your preferred number of daily ayah checks.</small>
+          <small>Preferred number of daily check tasks.</small>
         </div>
         <select id="goalSelect" style="background:var(--bg2);border:1px solid var(--line);color:var(--ink);padding:6px;border-radius:6px;font-weight:700">
           <option value="5">5 Checks</option>
@@ -181,21 +180,44 @@
           <option value="30">30 Checks</option>
         </select>
       </div>
+    </div>
+
+    <div class="sett-card" style="margin-top:16px;">
+      <h3>Data Portability</h3>
+      <div class="sett-row">
+        <div>
+          <label>Export Progress</label>
+          <small>Download your hifz history as a JSON file.</small>
+        </div>
+        <button class="btn-secondary" id="btnExport">Export JSON</button>
+      </div>
+      <div class="sett-row">
+        <div>
+          <label>Import Progress</label>
+          <small>Restore progress from a JSON file.</small>
+        </div>
+        <div>
+          <input type="file" id="importFile" accept=".json" style="display:none">
+          <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Import JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sett-card" style="margin-top:16px;">
+      <h3>Developer &amp; Testing Tools</h3>
+      <div class="sett-row">
+        <div>
+          <label>Simulate +1 Day</label>
+          <small>Decays memory by 24 hours to test retention decay.</small>
+        </div>
+        <button class="btn-secondary" id="btnSimulateDay">Simulate +1 Day</button>
+      </div>
       <div class="sett-row">
         <div>
           <label>Reset Application</label>
           <small style="color:var(--danger)">Wipes all memorized records and settings forever.</small>
         </div>
         <button class="btn-danger" id="btnReset">Reset All</button>
-      </div>
-    <div class="sett-card" style="margin-top:16px;">
-      <h3>Developer &amp; Testing Tools</h3>
-      <div class="sett-row">
-        <div>
-          <label>Simulate +1 Day</label>
-          <small>Decays all memory intervals by 24 hours to test retention decay.</small>
-        </div>
-        <button class="btn-secondary" id="btnSimulateDay">Simulate +1 Day</button>
       </div>
     </div>
   </section>
@@ -204,10 +226,10 @@
   <footer>
     <div class="links">
       <a href="#" onclick="go('home'); return false;">Home</a>
-      <a href="#" onclick="go('library'); return false;">Library</a>
+      <a href="#" onclick="go('quran'); return false;">Quran</a>
       <a href="#" onclick="go('settings'); return false;">Settings</a>
     </div>
-    <div class="ver" id="appVersion">v1.0.4 (updated 2026-07-21 17:47)</div>
+    <div class="ver" id="appVersion">v1.1.0 (updated 2026-07-21 18:09)</div>
     <div>Built with patience for memorizers of the Holy Quran.</div>
   </footer>
 </div>
@@ -265,10 +287,28 @@
   </div>
 </dialog>
 
-<!-- Ayah Detail Sheet (Bottom Sheet style) -->
+<!-- Ayah Detail & 9-Point Rating Sheet -->
 <dialog id="dlgAyahDetail">
-  <div class="sheet-content" id="ayahSheetContent">
-    <!-- Rendered dynamically in JS -->
+  <div class="sheet-content" id="ayahSheetContent"></div>
+</dialog>
+
+<!-- Add Log Session Modal -->
+<dialog id="dlgAddLog">
+  <div class="modal-overlay">
+    <button class="close-top" onclick="document.getElementById('dlgAddLog').close()">✕</button>
+    <h3 class="modal-title">Log Recitation Session</h3>
+    <div class="setting-grp">
+      <label>Recited To</label>
+      <input type="text" id="logWhoInput" placeholder="e.g. Ustadh Ahmad, Imam, Self..." style="width:100%;padding:10px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);font-weight:700;">
+    </div>
+    <div class="setting-grp">
+      <label>Surah &amp; Ayah Notes</label>
+      <input type="text" id="logNotesInput" placeholder="e.g. Surah Al-Mulk 1-30, no mistakes" style="width:100%;padding:10px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);font-weight:700;">
+    </div>
+    <button class="cta" id="btnSaveLog" style="margin-top:16px;">
+      <span>Save Recitation Log</span>
+      <span class="arrow">✓</span>
+    </button>
   </div>
 </dialog>
 
@@ -277,7 +317,7 @@
   <div class="ob-body">
     <div class="ob-bism">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
     <h2>What have you memorized?</h2>
-    <p class="ob-sub">Tap the surahs you have already memorized. HifzFlow will build your heat map and start protecting them with spaced review.</p>
+    <p class="ob-sub">Tap the surahs you have already memorized (Surahs 63–114). HifzFlow will build your heat map and schedule spaced review.</p>
     <div class="ob-list" id="obList"></div>
   </div>
   <div class="ob-foot">
@@ -288,12 +328,13 @@
   </div>
 </div>
 
-<!-- NAVIGATION BAR -->
+<!-- 5-TAB NAVIGATION BAR -->
 <nav>
   <button class="nav-btn on" data-v="home"><span class="ic">⌂</span>Home</button>
-  <button class="nav-btn" data-v="library"><span class="ic">▤</span>Library</button>
-  <button class="nav-practice" id="navPracticeBtn">▶<span class="bdg" id="dueBdg" style="display:none">0</span></button>
-  <button class="nav-btn" data-v="heat"><span class="ic">▦</span>Heat</button>
+  <button class="nav-btn" data-v="revise"><span class="ic">⚡</span>Revise</button>
+  <button class="nav-btn" data-v="quran"><span class="ic">▤</span>Quran</button>
+  <button class="nav-btn" data-v="history"><span class="ic">📖</span>Log</button>
+  <button class="nav-btn" data-v="insights"><span class="ic">📊</span>Insights</button>
   <button class="nav-btn" data-v="settings"><span class="ic">⚙</span>Settings</button>
 </nav>
 
