@@ -259,7 +259,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.3.4 (updated 2026-07-21 19:46)`;
+    verDiv.textContent = `v1.3.5 (updated 2026-07-21 19:48)`;
   }
 }
 
@@ -931,6 +931,32 @@ function setupEventListeners() {
   const ctaStart = document.getElementById('ctaStart');
   if (ctaStart) ctaStart.onclick = () => openSessionConfig();
   
+  const shareWisdom = document.getElementById('shareWisdom');
+  if (shareWisdom) {
+    shareWisdom.onclick = () => {
+      const text = document.getElementById('wisText')?.textContent || '';
+      const src = document.getElementById('wisSrc')?.textContent || '';
+      if (text) {
+        navigator.clipboard.writeText(`${text} — ${src}`);
+        toast("Wisdom quote copied to clipboard! ✦");
+      }
+    };
+  }
+  
+  document.querySelectorAll('#sessSizeSelect button').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#sessSizeSelect button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    };
+  });
+  
+  document.querySelectorAll('#sessModeSelect button').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('#sessModeSelect button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    };
+  });
+  
   const themeBtn = document.getElementById('themeBtn');
   if (themeBtn) {
     themeBtn.onclick = () => {
@@ -968,8 +994,30 @@ function setupEventListeners() {
   const btnLaunch = document.getElementById('btnLaunchSession');
   if (btnLaunch) btnLaunch.onclick = () => startPracticeSession();
   
+  const cycleSelect = document.getElementById('cycleSelect');
+  if (cycleSelect) {
+    cycleSelect.onchange = (e) => {
+      S.cycleDays = parseInt(e.target.value);
+      saveState();
+      toast(`Coverage cycle set to ${S.cycleDays} days`);
+    };
+  }
+  
+  const goalSelect = document.getElementById('goalSelect');
+  if (goalSelect) {
+    goalSelect.onchange = (e) => {
+      S.dailyGoal = parseInt(e.target.value);
+      saveState();
+      renderHome();
+      toast(`Daily goal set to ${S.dailyGoal} reviews`);
+    };
+  }
+  
   const btnExport = document.getElementById('btnExport');
   if (btnExport) btnExport.onclick = () => exportState();
+  
+  const importFile = document.getElementById('importFile');
+  if (importFile) importFile.onchange = (e) => importState(e);
   
   const btnSimulateDay = document.getElementById('btnSimulateDay');
   if (btnSimulateDay) btnSimulateDay.onclick = () => simulateDay();
