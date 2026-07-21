@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#070d0b">
+  <title>HifzFlow — Guard Your Memorization</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <div class="hrow">
+      <div class="brand" onclick="go('home')">
+        <div class="brand-mark">حِفْظ</div>
+        <div>
+          <h1 id="appName">HifzFlow</h1>
+          <small id="appTag">Guard your memorization</small>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="zoomer" id="zoomer">
+          <button data-z="0.88">A</button>
+          <button data-z="1" class="on">A</button>
+          <button data-z="1.18" style="font-size:1.05rem">A+</button>
+        </div>
+        <button class="icon-btn" id="themeBtn">☾</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HOME VIEW -->
+  <section class="view active pad" id="v-home">
+    <div class="hero">
+      <div class="wisdom">
+        <div class="tag-row">
+          <span class="tag" id="wisTag">On Patience</span>
+          <button class="share-btn" id="shareWisdom">Copy Quote</button>
+        </div>
+        <p id="wisText"></p>
+        <span class="src" id="wisSrc"></span>
+      </div>
+      <div class="stat-row">
+        <div class="stat" onclick="toast('Keep up the daily review to protect your streak!')"><b class="fire" id="stStreak">0 🔥</b><span>Day Streak</span></div>
+        <div class="stat" onclick="toast('Ayahs with memory strength >= 70%')"><b class="strong" id="stStrong">0</b><span>Strong</span></div>
+        <div class="stat" onclick="toast('Ayahs with memory strength < 40%')"><b id="stWeak" style="color:var(--danger)">0</b><span>Weak</span></div>
+      </div>
+      <div class="goal-card">
+        <div class="ring">
+          <svg width="76" height="76">
+            <circle class="bgc" cx="38" cy="38" r="32" stroke-width="7"/>
+            <circle class="fgc" id="ringFg" cx="38" cy="38" r="32" stroke-width="7" stroke-dasharray="201" stroke-dashoffset="201"/>
+          </svg>
+          <b id="ringTxt">0/10</b>
+        </div>
+        <div class="goal-info">
+          <h3 id="goalTitle">Today's Revision</h3>
+          <p id="goalSub">Weak spots rise to the front — review little, review often.</p>
+          <div class="mini-bar">
+            <span class="pill ar-t" id="pillAr">0 Arabic due</span>
+            <span class="pill en-t" id="pillEn">0 meaning due</span>
+          </div>
+        </div>
+      </div>
+      <button class="cta" id="ctaStart">
+        <span>Begin Session<span class="sub" id="ctaSub">Smart queue ready</span></span>
+        <span class="arrow">→</span>
+      </button>
+    </div>
+    <div class="sec-title">
+      <h2>Needs Attention</h2>
+      <button onclick="go('heat')">Memory map →</button>
+    </div>
+    <div id="dueList"></div>
+  </section>
+
+  <!-- LIBRARY VIEW -->
+  <section class="view pad" id="v-library">
+    <div style="margin-top:10px">
+      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Library</h2>
+      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Tap <b>“I know this”</b> for what you've memorized. Both tracks — recitation &amp; meaning — are watched separately.</p>
+    </div>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="libSearch" placeholder="Search surahs by name, meaning or number...">
+    </div>
+    <div class="filter-bar" id="libFilters">
+      <button class="filter-btn on" data-filter="all">All Verses</button>
+      <button class="filter-btn" data-filter="short">Juz ʿAmma</button>
+      <button class="filter-btn" data-filter="core">Core Verses</button>
+      <button class="filter-btn" data-filter="known">Memorized Only</button>
+    </div>
+    <div id="libraryList" style="margin-top:10px"></div>
+  </section>
+
+  <!-- HEAT MAP VIEW -->
+  <section class="view pad" id="v-heat">
+    <div style="margin-top:10px">
+      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Memory Heat Map</h2>
+      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Every ayah, colored by how alive it is in memory. Colors fade as time passes without review.</p>
+    </div>
+    <div class="legend">
+      <span>Fading</span>
+      <span class="cell" style="background:#e05656"></span>
+      <span class="cell" style="background:#e8a24d"></span>
+      <span class="cell" style="background:#cfc64d"></span>
+      <span class="cell" style="background:#6fbf5a"></span>
+      <span class="cell" style="background:#2fae72"></span>
+      <span>Strong</span>
+      <span class="cell untouched" style="width:18px;height:18px;border-radius:6px;background:var(--card2);border:1px solid var(--line)"></span>
+      <span>New</span>
+    </div>
+    <div id="heatWrap"></div>
+  </section>
+
+  <!-- TEACH VIEW -->
+  <section class="view pad" id="v-teach">
+    <div class="teach-hero">
+      <div class="ar-quote">خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ</div>
+      <p>"The best of you are those who learn the Qur'an and teach it." Teaching is the strongest form of revision — what you explain, you never forget.</p>
+      <small>Sahih al-Bukhari 5027</small>
+    </div>
+    <div class="sec-title">
+      <h2>Ready to Teach</h2>
+      <span style="font-size:0.68rem;color:var(--ink3);font-weight:600" id="taughtCount">plant your first seed</span>
+    </div>
+    <div id="teachList"></div>
+    <div class="sec-title">
+      <h2>How to Teach Gently</h2>
+    </div>
+    <div class="tips">
+      <div class="tip"><span class="n">1</span>Recite the ayah slowly, then ask your listener to repeat it back to you — listening to yourself correct them is deep revision.</div>
+      <div class="tip"><span class="n">2</span>Explain the meaning in your own simple words. If you stumble, that's a weak spot — the app will schedule it.</div>
+      <div class="tip"><span class="n">3</span>One ayah a day is enough. Patience with others is patience with yourself.</div>
+    </div>
+  </section>
+
+  <!-- SETTINGS VIEW -->
+  <section class="view pad" id="v-settings">
+    <div style="margin-top:10px">
+      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Settings &amp; Backup</h2>
+      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Manage your local revision history, export data for safekeeping, or start fresh.</p>
+    </div>
+    
+    <div class="sett-card">
+      <h3>Data Portability</h3>
+      <div class="sett-row">
+        <div>
+          <label>Export Progress</label>
+          <small>Download your hifz history as a backup JSON file.</small>
+        </div>
+        <button class="btn-secondary" id="btnExport">Export JSON</button>
+      </div>
+      <div class="sett-row">
+        <div>
+          <label>Import Progress</label>
+          <small>Restore your progress from a previously saved JSON file.</small>
+        </div>
+        <div>
+          <input type="file" id="importFile" accept=".json" style="display:none">
+          <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Import JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sett-card" style="margin-top:16px;">
+      <h3>Advanced Settings</h3>
+      <div class="sett-row">
+        <div>
+          <label>Daily Goal Target</label>
+          <small>Set your preferred number of daily ayah checks.</small>
+        </div>
+        <select id="goalSelect" style="background:var(--bg2);border:1px solid var(--line);color:var(--ink);padding:6px;border-radius:6px;font-weight:700">
+          <option value="5">5 Checks</option>
+          <option value="10" selected>10 Checks</option>
+          <option value="15">15 Checks</option>
+          <option value="20">20 Checks</option>
+          <option value="30">30 Checks</option>
+        </select>
+      </div>
+      <div class="sett-row">
+        <div>
+          <label>Reset Application</label>
+          <small style="color:var(--danger)">Wipes all memorized records and settings forever.</small>
+        </div>
+        <button class="btn-danger" id="btnReset">Reset All</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="links">
+      <a href="#" onclick="go('home'); return false;">Home</a>
+      <a href="#" onclick="go('library'); return false;">Library</a>
+      <a href="#" onclick="go('settings'); return false;">Settings</a>
+    </div>
+    <div class="ver" id="appVersion">v1.0.3 (updated 2026-07-21 17:47)</div>
+    <div>Built with patience for memorizers of the Holy Quran.</div>
+  </footer>
+</div>
+
+<!-- PRACTICE VIEW OVERLAY -->
+<div id="practice">
+  <div class="p-top">
+    <button class="close" onclick="endSession(false)">✕</button>
+    <div class="p-track"><i id="pFill"></i></div>
+    <span class="p-count" id="pCount">1/10</span>
+  </div>
+  <div class="p-body" id="pBody"></div>
+</div>
+
+<!-- NATIVE MODAL DIALOGS -->
+
+<!-- Session Config Dialog -->
+<dialog id="dlgSessionConfig">
+  <div class="modal-overlay">
+    <button class="close-top" onclick="document.getElementById('dlgSessionConfig').close()">✕</button>
+    <h3 class="modal-title">Session Settings</h3>
+    
+    <div class="setting-grp">
+      <label>Session Size</label>
+      <div class="grid-select" id="sessSizeSelect">
+        <button data-val="5">5</button>
+        <button data-val="10" class="active">10</button>
+        <button data-val="15">15</button>
+        <button data-val="20">20</button>
+      </div>
+    </div>
+    
+    <div class="setting-grp">
+      <label>Review Mode</label>
+      <div class="stack-select" id="sessModeSelect">
+        <button data-val="dual" class="active">
+          <span>Dual Track</span>
+          <span class="desc">Arabic recall &amp; Translation meaning</span>
+        </button>
+        <button data-val="arabic">
+          <span>Recitation Track</span>
+          <span class="desc">Arabic recall only</span>
+        </button>
+        <button data-val="meaning">
+          <span>Translation Track</span>
+          <span class="desc">English translation recall only</span>
+        </button>
+      </div>
+    </div>
+    
+    <button class="cta" id="btnLaunchSession" style="margin-top:20px">
+      <span>Start Session</span>
+      <span class="arrow">→</span>
+    </button>
+  </div>
+</dialog>
+
+<!-- Ayah Detail Sheet (Bottom Sheet style) -->
+<dialog id="dlgAyahDetail">
+  <div class="sheet-content" id="ayahSheetContent">
+    <!-- Rendered dynamically in JS -->
+  </div>
+</dialog>
+
+<!-- ONBOARDING OVERLAY -->
+<div id="onboard">
+  <div class="ob-body">
+    <div class="ob-bism">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div>
+    <h2>What have you memorized?</h2>
+    <p class="ob-sub">Tap the surahs you have already memorized. HifzFlow will build your heat map and start protecting them with spaced review.</p>
+    <div class="ob-list" id="obList"></div>
+  </div>
+  <div class="ob-foot">
+    <button class="cta" onclick="finishOnboard()">
+      <span>Begin My Journey</span>
+      <span class="arrow">→</span>
+    </button>
+  </div>
+</div>
+
+<!-- NAVIGATION BAR -->
+<nav>
+  <button class="nav-btn on" data-v="home"><span class="ic">⌂</span>Home</button>
+  <button class="nav-btn" data-v="library"><span class="ic">▤</span>Library</button>
+  <button class="nav-practice" id="navPracticeBtn">▶<span class="bdg" id="dueBdg" style="display:none">0</span></button>
+  <button class="nav-btn" data-v="heat"><span class="ic">▦</span>Heat</button>
+  <button class="nav-btn" data-v="settings"><span class="ic">⚙</span>Settings</button>
+</nav>
+
+<div id="toast"></div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
