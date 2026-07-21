@@ -259,7 +259,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.3.1 (updated 2026-07-21 19:28)`;
+    verDiv.textContent = `v1.3.2 (updated 2026-07-21 19:30)`;
   }
 }
 
