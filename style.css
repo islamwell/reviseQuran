@@ -2016,26 +2016,22 @@ footer .ver {
   font-family: monospace;
 }
 
-/* ============ 9-POINT RATING BADGES ============ */
+/* ============ 3-COLOR RATING BADGES ============ */
 .lvl-badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 8px;
+  gap: 4px;
+  padding: 3px 10px;
   border-radius: 99px;
-  font-size: 0.62rem;
+  font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.02em;
 }
 
-.lvl-1 { background: rgba(159, 168, 163, 0.15); color: #9fa8a3; }
-.lvl-2 { background: rgba(224, 86, 86, 0.15); color: #e05656; }
-.lvl-3 { background: rgba(232, 132, 77, 0.15); color: #e8844d; }
-.lvl-4 { background: rgba(232, 182, 77, 0.15); color: #e8b64d; }
-.lvl-5 { background: rgba(214, 207, 77, 0.15); color: #d6cf4d; }
-.lvl-6 { background: rgba(163, 193, 77, 0.15); color: #a3c14d; }
-.lvl-7 { background: rgba(111, 191, 90, 0.15); color: #6fbf5a; }
-.lvl-8 { background: rgba(47, 174, 114, 0.15); color: #2fae72; }
-.lvl-9 { background: rgba(18, 160, 107, 0.2); color: var(--acc); box-shadow: 0 0 8px rgba(61, 220, 151, 0.25); }
+.lvl-badge.lvl-weak, .lvl-1 { background: rgba(224, 86, 86, 0.15); color: #e05656; border: 1px solid rgba(224, 86, 86, 0.3); }
+.lvl-badge.lvl-medium, .lvl-2 { background: rgba(211, 156, 67, 0.15); color: #d39c43; border: 1px solid rgba(211, 156, 67, 0.3); }
+.lvl-badge.lvl-strong, .lvl-3 { background: rgba(22, 117, 102, 0.15); color: var(--acc); border: 1px solid rgba(22, 117, 102, 0.3); }
+
 
 /* ============ FLOATING NAVIGATION ISLAND (DESKTOP) ============ */
 @media (min-width: 700px) {

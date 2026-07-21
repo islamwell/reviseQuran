@@ -3,35 +3,24 @@
    Surahs 63–114 Scope, 9-Point Scale, Dual-Track SM-2, & Analytics
    ================================================================ */
 
-/* ============ 9-POINT RATING SCALE CONFIG ============ */
+/* ============ 3-COLOR RATING SCALE CONFIG ============ */
 export const RATING_SCALE = [
-  { level: 1, label: "Not memorized", pct: 0, iv: 0, class: "lvl-1" },
-  { level: 2, label: "Very weak", pct: 15, iv: 0.05, class: "lvl-2" },
-  { level: 3, label: "Weak", pct: 30, iv: 1, class: "lvl-3" },
-  { level: 4, label: "Developing", pct: 45, iv: 3, class: "lvl-4" },
-  { level: 5, label: "Moderate", pct: 60, iv: 7, class: "lvl-5" },
-  { level: 6, label: "Good", pct: 72, iv: 14, class: "lvl-6" },
-  { level: 7, label: "Strong", pct: 84, iv: 30, class: "lvl-7" },
-  { level: 8, label: "Very strong", pct: 93, iv: 60, class: "lvl-8" },
-  { level: 9, label: "Almost automatic", pct: 100, iv: 90, class: "lvl-9" }
+  { level: 1, label: "Weak", icon: "🔴", pct: 30, iv: 1, class: "lvl-weak", color: "#e05656" },
+  { level: 2, label: "Medium", icon: "🟡", pct: 65, iv: 4, class: "lvl-medium", color: "#d39c43" },
+  { level: 3, label: "Strong", icon: "🟢", pct: 95, iv: 14, class: "lvl-strong", color: "#167566" }
 ];
 
 export function ratingToStrength(lvl) {
   const item = RATING_SCALE.find(r => r.level === lvl);
-  return item ? item.pct : 0;
+  return item ? item.pct : 30;
 }
 
-export function strengthToRating(pct) {
+export function strengthToRating(pct, assignedLvl = null) {
+  if (assignedLvl && [1, 2, 3].includes(assignedLvl)) return assignedLvl;
   if (pct === null) return 1;
-  if (pct >= 95) return 9;
-  if (pct >= 88) return 8;
-  if (pct >= 78) return 7;
-  if (pct >= 66) return 6;
-  if (pct >= 52) return 5;
-  if (pct >= 38) return 4;
-  if (pct >= 22) return 3;
-  if (pct >= 5) return 2;
-  return 1;
+  if (pct < 50) return 1;
+  if (pct < 80) return 2;
+  return 3;
 }
 
 /* ============ WISDOM DATA ============ */
@@ -270,7 +259,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.3.0 (updated 2026-07-21 18:59)`;
+    verDiv.textContent = `v1.3.1 (updated 2026-07-21 19:28)`;
   }
 }
 
@@ -613,15 +602,15 @@ function renderInsights() {
     </div>
     
     <div class="insight-card">
-      <h3 style="font-size:0.95rem;font-weight:800;">Strength Distribution (9-Point Scale)</h3>
+      <h3 style="font-size:0.95rem;font-weight:800;">Strength Distribution (3 Colors)</h3>
       <div class="chart-bar-container">
         ${RATING_SCALE.map(r => {
           const cnt = dist[r.level] || 0;
           const barPct = memorized.length ? Math.round((cnt / memorized.length) * 100) : 0;
           return `
             <div class="chart-row">
-              <span class="lbl">${r.label}</span>
-              <div class="track"><i style="width:${barPct}%;"></i></div>
+              <span class="lbl" style="color:${r.color}">${r.icon} ${r.label}</span>
+              <div class="track"><i style="width:${barPct}%;background:${r.color};"></i></div>
               <span style="width:30px;text-align:right;">${cnt}</span>
             </div>
           `;
@@ -729,30 +718,32 @@ export function openSurahDetail(sNum) {
     <div class="ayah-list-detail">
       ${surah.ayahs.map((ay, idx) => {
         const id = idOf(sNum, idx);
-        const aStr = calculateStrength(id, 'a');
-        const mStr = calculateStrength(id, 'm');
-        const aLvl = strengthToRating(aStr);
-        const mLvl = strengthToRating(mStr);
+        const aSt = S.stats[id]?.a;
+        const mSt = S.stats[id]?.m;
+        const aLvl = aSt?.lvl || strengthToRating(calculateStrength(id, 'a'));
+        const mLvl = mSt?.lvl || strengthToRating(calculateStrength(id, 'm'));
+        const aScale = RATING_SCALE.find(r => r.level === aLvl) || RATING_SCALE[0];
+        const mScale = RATING_SCALE.find(r => r.level === mLvl) || RATING_SCALE[0];
         
         return `
           <div style="padding:14px 0;border-bottom:1px solid var(--line);">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:0.75rem;font-weight:800;color:var(--gold);">Ayah ${idx + 1}</span>
               <div style="display:flex;gap:6px;">
-                <span class="lvl-badge lvl-${aLvl}">AR: Lvl ${aLvl}</span>
-                <span class="lvl-badge lvl-${mLvl}">EN: Lvl ${mLvl}</span>
+                <span class="lvl-badge ${aScale.class}">AR: ${aScale.icon} ${aScale.label}</span>
+                <span class="lvl-badge ${mScale.class}">EN: ${mScale.icon} ${mScale.label}</span>
               </div>
             </div>
             <div class="ar-big" style="font-size:1.35rem;line-height:2;margin:8px 0;">${ay.ar}</div>
             <div class="en-big" style="font-size:0.85rem;">${ay.en}</div>
             
-            <!-- 9-Point Scale Quick Selector -->
+            <!-- 3 Color Quick Selector -->
             <div style="margin-top:10px;">
-              <small style="font-size:0.65rem;font-weight:800;color:var(--ink3);text-transform:uppercase;">Rate Recitation (Arabic)</small>
-              <div style="display:flex;gap:4px;margin-top:4px;overflow-x:auto;padding-bottom:4px;">
+              <small style="font-size:0.65rem;font-weight:800;color:var(--ink3);text-transform:uppercase;">Set Memorization Rating</small>
+              <div style="display:flex;gap:6px;margin-top:4px;">
                 ${RATING_SCALE.map(r => `
-                  <button style="padding:4px 8px;font-size:0.65rem;border-radius:6px;background:var(--bg2);border:1px solid var(--line);font-weight:800;" onclick="setAyahRating('${id}','a',${r.level}); openSurahDetail(${sNum});">
-                    ${r.level}
+                  <button style="flex:1;padding:8px 10px;font-size:0.75rem;border-radius:8px;background:${r.color}18;border:1px solid ${r.color}44;color:${r.color};font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;" onclick="setAyahRating('${id}','a',${r.level}); setAyahRating('${id}','m',${r.level}); openSurahDetail(${sNum});">
+                    <span>${r.icon}</span> <span>${r.label}</span>
                   </button>
                 `).join('')}
               </div>
@@ -837,9 +828,9 @@ function renderPracticeCard() {
         </div>
       </div>
       <div class="grade-row" id="practiceGradeRow" style="opacity:0.35;pointer-events:none">
-        ${RATING_SCALE.slice(0, 4).map((r, i) => `
+        ${RATING_SCALE.map((r, i) => `
           <button class="grade g${i + 1}" onclick="gradePractice(${r.level})">
-            ${r.label}
+            ${r.icon} ${r.label}
           </button>
         `).join('')}
       </div>
