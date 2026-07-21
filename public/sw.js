@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hifzflow-v1.2.0';
+const CACHE_NAME = 'hifzflow-v1.3.0';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -52,6 +52,23 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       });
+    })
+  );
+});
+
+// Notification click listener — opens or focuses the HifzFlow app tab
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
     })
   );
 });

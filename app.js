@@ -89,6 +89,7 @@ function loadState() {
       if (!S.dailyGoal) S.dailyGoal = 10;
       if (!S.cycleDays) S.cycleDays = 30;
       if (!S.logs) S.logs = [];
+      if (!S.reminders) S.reminders = { enabled: false, time: "08:00", lastFired: null };
     }
   } catch (e) {
     console.error("Failed to load local storage state", e);
@@ -269,7 +270,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.2.2 (updated 2026-07-21 18:57)`;
+    verDiv.textContent = `v1.3.0 (updated 2026-07-21 18:59)`;
   }
 }
 
@@ -634,9 +635,76 @@ function renderInsights() {
 function renderSettings() {
   const goalSelect = document.getElementById('goalSelect');
   const cycleSelect = document.getElementById('cycleSelect');
+  const remindersToggle = document.getElementById('remindersToggle');
+  const reminderTimeInput = document.getElementById('reminderTimeInput');
   
   if (goalSelect) goalSelect.value = S.dailyGoal || 10;
   if (cycleSelect) cycleSelect.value = S.cycleDays || 30;
+  if (remindersToggle) remindersToggle.checked = !!S.reminders?.enabled;
+  if (reminderTimeInput) reminderTimeInput.value = S.reminders?.time || "08:00";
+}
+
+/* ============ REMINDERS & NOTIFICATION ENGINE ============ */
+export async function requestNotificationPermission() {
+  if (!('Notification' in window)) {
+    toast("Notifications not supported on this browser");
+    return false;
+  }
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission !== 'denied') {
+    const perm = await Notification.requestPermission();
+    return perm === 'granted';
+  }
+  toast("Notifications blocked in browser settings");
+  return false;
+}
+
+export function sendNotification(title, body) {
+  if ('Notification' in window && Notification.permission === 'granted') {
+    new Notification(title, {
+      body,
+      icon: '/favicon.ico',
+      tag: 'hifz-reminder'
+    });
+  }
+}
+
+export async function sendTestReminder() {
+  const granted = await requestNotificationPermission();
+  if (granted) {
+    sendNotification(
+      "HifzFlow — Guard Your Memorization ✦",
+      "Success! Your daily revision reminders are active. Keep up the strong progress!"
+    );
+    toast("Test notification sent! 🔔");
+  }
+}
+window.sendTestReminder = sendTestReminder;
+
+export function checkReminderAlarms() {
+  if (!S.reminders?.enabled) return;
+  
+  const now = new Date();
+  const currentHM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  
+  if (currentHM === S.reminders.time && S.reminders.lastFired !== TODAY_STRING) {
+    S.reminders.lastFired = TODAY_STRING;
+    saveState();
+    
+    const memorized = getMemorizedAyahs();
+    let weakCount = 0;
+    memorized.forEach(ayah => {
+      const comb = getCombinedStrength(ayah.id);
+      if (comb !== null && comb < 40) weakCount++;
+    });
+    
+    sendNotification(
+      "Daily Hifz Revision Time ✦",
+      weakCount > 0 
+        ? `You have ${weakCount} weak verses ready for review. Tap to start your quick session!`
+        : `Time for your daily hifz review — keep your memorization strong!`
+    );
+  }
 }
 
 /* ============ AYAH RATING DETAIL DIALOG ============ */
@@ -964,6 +1032,37 @@ function setupEventListeners() {
 
   const btnSignOut = document.getElementById('btnSignOut');
   if (btnSignOut) btnSignOut.onclick = () => signOutUser();
+
+  // Reminder Settings listeners
+  const remindersToggle = document.getElementById('remindersToggle');
+  if (remindersToggle) {
+    remindersToggle.onchange = async (e) => {
+      if (e.target.checked) {
+        const granted = await requestNotificationPermission();
+        if (!granted) { e.target.checked = false; return; }
+        if (!S.reminders) S.reminders = { enabled: true, time: "08:00" };
+        S.reminders.enabled = true;
+        toast("Daily reminders enabled! 🔔");
+      } else {
+        if (S.reminders) S.reminders.enabled = false;
+        toast("Daily reminders disabled");
+      }
+      saveState();
+    };
+  }
+
+  const reminderTimeInput = document.getElementById('reminderTimeInput');
+  if (reminderTimeInput) {
+    reminderTimeInput.onchange = (e) => {
+      if (!S.reminders) S.reminders = { enabled: false, time: "08:00" };
+      S.reminders.time = e.target.value;
+      saveState();
+      toast(`Reminder time set to ${e.target.value}`);
+    };
+  }
+
+  const btnTestReminder = document.getElementById('btnTestReminder');
+  if (btnTestReminder) btnTestReminder.onclick = () => sendTestReminder();
 }
 
 export function updateAuthUI() {
@@ -1137,6 +1236,7 @@ async function boot() {
       const viewId = activeBtn.dataset.v;
       if (viewId === 'home') renderHome();
     }
+    checkReminderAlarms();
   }, 30000);
 }
 

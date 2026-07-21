@@ -188,6 +188,34 @@
     </div>
 
     <div class="sett-card" style="margin-top:16px;">
+      <h3>Revision Reminders &amp; Alarms</h3>
+      <div class="sett-row">
+        <div>
+          <label>Enable Daily Reminders</label>
+          <small>Receive notifications for weak verses &amp; revision goals.</small>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="remindersToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="sett-row">
+        <div>
+          <label>Preferred Reminder Time</label>
+          <small>When would you like your main revision nudge?</small>
+        </div>
+        <input type="time" id="reminderTimeInput" value="08:00" style="background:var(--bg2);border:1px solid var(--line);color:var(--ink);padding:6px 10px;border-radius:6px;font-weight:700;">
+      </div>
+      <div class="sett-row">
+        <div>
+          <label>Test Notification</label>
+          <small>Send an instant test alert to your device.</small>
+        </div>
+        <button class="btn-secondary" id="btnTestReminder">Send Test Alert 🔔</button>
+      </div>
+    </div>
+
+    <div class="sett-card" style="margin-top:16px;">
       <h3>Data Portability</h3>
       <div class="sett-row">
         <div>
