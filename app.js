@@ -55,7 +55,7 @@ let S = {
 // Async Dataset Loader
 export async function loadQuranDataset() {
   try {
-    const res = await fetch('./data/quran_63_114.json');
+    const res = await fetch('./data/quran_63_114.json?v=1.3.3');
     if (res.ok) {
       QURAN_DATA = await res.json();
       console.log("Quran Dataset (Surahs 63-114) loaded successfully with keys:", Object.keys(QURAN_DATA).length);
@@ -259,7 +259,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.3.2 (updated 2026-07-21 19:30)`;
+    verDiv.textContent = `v1.3.3 (updated 2026-07-21 19:39)`;
   }
 }
 
