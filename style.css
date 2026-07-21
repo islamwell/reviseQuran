@@ -796,11 +796,12 @@ header {
   font-size: 1.05rem;
   font-weight: 800;
   display: block;
+  color: var(--ink);
 }
 
 .surah-meta span {
   font-size: 0.72rem;
-  color: var(--ink3);
+  color: var(--ink2);
   font-weight: 700;
   margin-top: 2px;
   display: block;
@@ -809,8 +810,9 @@ header {
 .surah-arname {
   font-family: var(--font-arabic);
   font-size: 1.45rem;
-  color: var(--ink2);
+  color: var(--gold);
   margin-right: 8px;
+  font-weight: 700;
 }
 
 .know-toggle {
