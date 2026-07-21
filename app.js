@@ -228,7 +228,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.1.0 (updated 2026-07-21 18:09)`;
+    verDiv.textContent = `v1.1.1 (updated 2026-07-21 18:34)`;
   }
 }
 
@@ -899,7 +899,74 @@ function setupEventListeners() {
       toast("Recitation log saved! ✦");
     };
   }
+  
+  // Onboarding CTA button listener
+  const obBtn = document.querySelector('#onboard .ob-foot button');
+  if (obBtn) {
+    obBtn.onclick = () => {
+      finishOnboard();
+    };
+  }
 }
+
+export function renderOnboardList() {
+  const obList = document.getElementById('obList');
+  if (!obList) return;
+  
+  let html = '';
+  for (let sNum = 63; sNum <= 114; sNum++) {
+    const surah = QURAN_DATA[sNum];
+    if (!surah) continue;
+    const isKnown = !!S.memorized[sNum];
+    
+    html += `
+      <div class="surah-card">
+        <div class="surah-top">
+          <span class="surah-num">
+            <svg viewBox="0 0 40 40"><path d="M20 2 24 10 32 8 30 16 38 20 30 24 32 32 24 30 20 38 16 30 8 32 10 24 2 20 10 16 8 8 16 10Z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+            ${surah.n}
+          </span>
+          <div class="surah-meta">
+            <b>${surah.name}</b>
+            <span>${surah.en} · ${surah.ayahs.length} Ayahs</span>
+          </div>
+          <span class="surah-arname">${surah.ar}</span>
+          <button class="know-toggle ${isKnown ? 'on' : ''}" data-sn="${surah.n}">
+            ${isKnown ? '✓ Known' : 'I know this'}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  
+  obList.innerHTML = html;
+  
+  obList.querySelectorAll('.know-toggle').forEach(btn => {
+    btn.onclick = () => {
+      const sNum = parseInt(btn.dataset.sn);
+      if (S.memorized[sNum]) {
+        delete S.memorized[sNum];
+        btn.classList.remove('on');
+        btn.textContent = 'I know this';
+      } else {
+        bulkMarkSurahMemorized(sNum, 7);
+        btn.classList.add('on');
+        btn.textContent = '✓ Known';
+      }
+      saveState();
+    };
+  });
+}
+
+export function finishOnboard() {
+  S.onboarded = true;
+  saveState();
+  const obOverlay = document.getElementById('onboard');
+  if (obOverlay) obOverlay.classList.remove('open');
+  go('home');
+  toast("Bismillah — Your revision map is ready! ✦");
+}
+window.finishOnboard = finishOnboard;
 
 async function boot() {
   loadState();
@@ -912,6 +979,7 @@ async function boot() {
   if (!S.onboarded) {
     const obOverlay = document.getElementById('onboard');
     if (obOverlay) obOverlay.classList.add('open');
+    renderOnboardList();
   } else {
     go('home');
   }
