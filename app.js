@@ -349,7 +349,7 @@ function applyPreferences() {
   // Update version in footer
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.0.3 (updated 2026-07-21 17:47)`;
+    verDiv.textContent = `v1.0.4 (updated 2026-07-21 17:47)`;
   }
 }
 
@@ -698,17 +698,21 @@ function toggleSurahMemorized(sn) {
 }
 
 /* ============ RENDER HEAT MAP VIEW ============ */
+function getDaysAgo(st) {
+  if (!st || !st.last) return 'never';
+  const elapsedDays = (Date.now() - st.last) / 86400000;
+  return elapsedDays < 0.1 ? 'today' : `${elapsedDays.toFixed(1)}d ago`;
+}
+
 function renderHeat() {
   const wrap = document.getElementById('heatWrap');
   if (!wrap) return;
   
   let html = '';
-  let activeSurahs = 0;
   
   BANK.forEach(category => {
     category.surahs.forEach(surah => {
       if (!S.memorized[surah.n]) return;
-      activeSurahs++;
       
       let sumStrength = 0;
       let count = 0;
@@ -724,15 +728,39 @@ function renderHeat() {
           count++;
         }
         
-        const cellBackground = comb === null ? '' : `background:${cellBg(comb)}`;
-        const badgeColor = mStr === null ? 'transparent' : cellBg(mStr);
-        
-        return `
-          <button class="hm-cell ${comb === null ? 'untouched' : ''}" style="${cellBackground}" data-id="${id}" aria-label="Ayah ${idx + 1} of Surah ${surah.name}, strength ${comb === null ? 'New' : comb + '%'}">
-            ${idx + 1}
-            ${comb !== null ? `<span class="half" style="background:${badgeColor};border:1.2px solid rgba(0,0,0,0.2)"></span>` : ''}
-          </button>
-        `;
+        if (aStr === null && mStr === null) {
+          return `
+            <button class="hm-cell untouched" data-id="${id}" aria-label="Ayah ${idx + 1} of Surah ${surah.name}, Untested">
+              ${idx + 1}
+            </button>
+          `;
+        } else {
+          const aHue = aStr !== null ? (aStr / 100 * 120).toFixed(1) : 120;
+          const mHue = mStr !== null ? (mStr / 100 * 120).toFixed(1) : 120;
+          
+          const aStat = S.stats[id]?.a;
+          const mStat = S.stats[id]?.m;
+          
+          const aAgo = getDaysAgo(aStat);
+          const mAgo = getDaysAgo(mStat);
+          
+          const hueStyles = `--h: ${aHue}; --mh: ${mHue};`;
+          
+          // Breathing alarm when Arabic recall strength is < 33%
+          const stateLabel = (aStr !== null && aStr < 33) ? 'red' : 'green';
+          
+          return `
+            <button class="hm-cell reviewed" data-state="${stateLabel}" style="${hueStyles}" data-id="${id}" aria-label="Ayah ${idx + 1} of Surah ${surah.name}, Recitation: ${aStr !== null ? aStr + '%' : 'untested'}, Meaning: ${mStr !== null ? mStr + '%' : 'untested'}">
+              ${idx + 1}
+              ${mStr !== null ? `<span class="mdot"></span>` : ''}
+              <span class="tip">
+                <span class="row"><b>Arabic:</b> <span>${aStr !== null ? aStr + '%' : '—'} · ${aAgo}</span></span>
+                <span class="row"><b>Meaning:</b> <span>${mStr !== null ? mStr + '%' : '—'} · ${mAgo}</span></span>
+                <span class="hint">Click for details &amp; review</span>
+              </span>
+            </button>
+          `;
+        }
       }).join('');
       
       const averageStr = count ? Math.round(sumStrength / count) : 0;
@@ -1159,6 +1187,24 @@ function renderSettings() {
   }
 }
 
+function simulateDay() {
+  let count = 0;
+  for (const id in S.stats) {
+    if (S.stats[id].a && S.stats[id].a.last) {
+      S.stats[id].a.last -= 86400000;
+      count++;
+    }
+    if (S.stats[id].m && S.stats[id].m.last) {
+      S.stats[id].m.last -= 86400000;
+      count++;
+    }
+  }
+  saveState();
+  renderHome();
+  renderHeat();
+  toast(`Simulated +1 day. Decayed memory on ${count} active tracks. ⚡`);
+}
+
 // Export state as JSON file
 function exportState() {
   const dataStr = JSON.stringify(S, null, 2);
@@ -1424,6 +1470,13 @@ function setupEventListeners() {
     };
   }
   
+  const btnSimulateDay = document.getElementById('btnSimulateDay');
+  if (btnSimulateDay) {
+    btnSimulateDay.onclick = () => {
+      simulateDay();
+    };
+  }
+  
   const importInput = document.getElementById('importFile');
   if (importInput) {
     importInput.onchange = (e) => {
@@ -1456,6 +1509,16 @@ function boot() {
   } else {
     go('home');
   }
+  
+  // Live re-tint/update active view every 30 seconds
+  setInterval(() => {
+    const activeBtn = document.querySelector('nav .nav-btn.on');
+    if (activeBtn) {
+      const viewId = activeBtn.dataset.v;
+      if (viewId === 'home') renderHome();
+      if (viewId === 'heat') renderHeat();
+    }
+  }, 30000);
 }
 
 // Trigger initial boot load

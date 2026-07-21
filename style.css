@@ -954,6 +954,9 @@ header {
   position: relative;
   box-shadow: var(--shadow);
   transition: transform 0.2s var(--ease-spring), filter 0.2s;
+  overflow: visible; /* Show tooltips correctly */
+  --h: 120;
+  --mh: 120;
 }
 
 .hm-cell:active {
@@ -966,13 +969,86 @@ header {
   border-color: var(--line);
 }
 
-.hm-cell .half {
+.hm-cell.reviewed {
+  background: hsl(var(--h) 42% 12%);
+  border: 1px solid hsl(var(--h) 38% 26%);
+  color: hsl(var(--h) 80% 85%);
+  transition: background 2.5s linear, border-color 2.5s linear, color 2.5s linear, transform 0.2s var(--ease-spring);
+}
+
+[data-theme="light"] .hm-cell.reviewed {
+  background: hsl(var(--h) 50% 90%);
+  border: 1px solid hsl(var(--h) 45% 70%);
+  color: hsl(var(--h) 65% 20%);
+}
+
+.hm-cell[data-state="red"] {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  50% {
+    box-shadow: 0 0 16px hsl(var(--h) 75% 45% / 0.5);
+  }
+}
+
+.hm-cell .mdot {
   position: absolute;
-  bottom: 3px;
-  right: 3px;
-  width: 6px;
-  height: 6px;
-  border-radius: 2px;
+  top: 4px;
+  right: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: hsl(var(--mh) 80% 55%);
+  border: 1px solid rgba(0,0,0,0.3);
+  box-shadow: 0 0 6px hsl(var(--mh) 80% 55% / 0.5);
+  transition: background 2.5s linear, box-shadow 2.5s linear;
+}
+
+.hm-cell .tip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%) translateY(4px);
+  background: var(--card-solid);
+  border: 1px solid var(--line2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.65rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: var(--shadow);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  color: var(--ink);
+  font-family: var(--font-main);
+  text-align: left;
+}
+
+.hm-cell:hover .tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.hm-cell .tip .row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+
+.hm-cell .tip .row b {
+  color: var(--ink2);
+  font-weight: 700;
+}
+
+.hm-cell .tip .hint {
+  color: var(--ink3);
+  font-size: 0.58rem;
+  margin-top: 4px;
+  display: block;
 }
 
 /* ============ NATIVE DIALOG OVERLAYS ============ */
