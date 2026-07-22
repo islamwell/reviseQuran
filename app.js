@@ -259,7 +259,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.4.0 (updated 2026-07-22 08:41)`;
+    verDiv.textContent = `v1.4.1 (updated 2026-07-22 08:44)`;
   }
 }
 
@@ -706,6 +706,12 @@ export function openSurahDetail(sNum) {
   
   content.innerHTML = `
     <div class="grab"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <button class="btn-secondary" style="padding:6px 14px;font-size:0.8rem;font-weight:800;display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="document.getElementById('dlgAyahDetail').close()">
+        ← Back to Previous Screen
+      </button>
+      <button class="close-top" style="position:static;" onclick="document.getElementById('dlgAyahDetail').close()">✕</button>
+    </div>
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <span class="ref">${surah.name} · Surah ${surah.n}</span>
       <button class="know-toggle ${S.memorized[sNum] ? 'on' : ''}" onclick="toggleSurahMemorized(${surah.n}); openSurahDetail(${surah.n});">
@@ -751,6 +757,12 @@ export function openSurahDetail(sNum) {
           </div>
         `;
       }).join('')}
+    </div>
+    
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);">
+      <button class="btn-secondary" style="width:100%;padding:12px;font-size:0.88rem;font-weight:800;cursor:pointer;" onclick="document.getElementById('dlgAyahDetail').close()">
+        ← Back to Previous Screen
+      </button>
     </div>
   `;
   
@@ -931,6 +943,7 @@ export function handleKeyDown(e) {
   const practiceModal = document.getElementById('practice');
   const isPracticeOpen = practiceModal && practiceModal.classList.contains('open');
   const helpDialog = document.getElementById('dlgHelp');
+  const ayahDetailDialog = document.getElementById('dlgAyahDetail');
 
   // Help dialog toggle ('?' or 'Shift + /')
   if (e.key === '?' || (e.shiftKey && e.key === '/')) {
@@ -942,8 +955,12 @@ export function handleKeyDown(e) {
     return;
   }
 
-  // Escape key closes help modal or practice session
+  // Escape key closes help modal, ayah detail modal, or practice session
   if (e.key === 'Escape') {
+    if (ayahDetailDialog && ayahDetailDialog.open) {
+      ayahDetailDialog.close();
+      return;
+    }
     if (helpDialog && helpDialog.open) {
       helpDialog.close();
       return;
