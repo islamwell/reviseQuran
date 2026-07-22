@@ -16,7 +16,12 @@ export function ratingToStrength(lvl) {
 }
 
 export function strengthToRating(pct, assignedLvl = null) {
-  if (assignedLvl && [1, 2, 3].includes(assignedLvl)) return assignedLvl;
+  if (assignedLvl) {
+    if ([1, 2, 3].includes(assignedLvl)) return assignedLvl;
+    if (assignedLvl >= 7) return 3; // Legacy 9-point strong -> Lvl 3 (Strong 🟢)
+    if (assignedLvl >= 4) return 2; // Legacy 9-point medium -> Lvl 2 (Medium 🟡)
+    if (assignedLvl >= 1) return 1; // Legacy 9-point weak -> Lvl 1 (Weak 🔴)
+  }
   if (pct === null) return 1;
   if (pct < 50) return 1;
   if (pct < 80) return 2;
@@ -231,7 +236,7 @@ export function getSurahRollup(sNum) {
 }
 
 // Bulk mark entire surah as memorized
-export function bulkMarkSurahMemorized(sNum, level = 7) {
+export function bulkMarkSurahMemorized(sNum, level = 3) {
   const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
   if (!surah || !surah.ayahs) return;
   
@@ -259,7 +264,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.4.1 (updated 2026-07-22 08:44)`;
+    verDiv.textContent = `v1.4.2 (updated 2026-07-22 08:45)`;
   }
 }
 
@@ -543,7 +548,7 @@ export function toggleSurahMemorized(sNum) {
   if (S.memorized[sNum]) {
     delete S.memorized[sNum];
   } else {
-    bulkMarkSurahMemorized(sNum, 7);
+    bulkMarkSurahMemorized(sNum, 3);
   }
   saveState();
   renderQuran();
@@ -1326,7 +1331,7 @@ export function renderOnboardList() {
         btn.classList.remove('on');
         btn.textContent = 'I know this';
       } else {
-        bulkMarkSurahMemorized(sNum, 7);
+        bulkMarkSurahMemorized(sNum, 3);
         btn.classList.add('on');
         btn.textContent = '✓ Known';
       }
