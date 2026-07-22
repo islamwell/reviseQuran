@@ -2212,5 +2212,21 @@ input:checked + .slider:before {
   background-color: #ffffff;
 }
 
+/* ============ KEYBOARD SHORTCUT KEYCAPS ============ */
+.kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  font-family: var(--font-main), monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--card);
+  border: 1px solid var(--line2);
+  border-radius: 5px;
+  box-shadow: 0 2px 0 var(--line2);
+  margin: 0 1px;
+}
+
+
 
 

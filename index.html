@@ -33,6 +33,7 @@
           <button data-z="1.18" style="font-size:1.05rem">A+</button>
         </div>
         <button class="icon-btn" id="themeBtn">☾</button>
+        <button class="icon-btn" id="helpBtn" title="Help & Keyboard Shortcuts (?)">?</button>
       </div>
     </div>
   </header>
@@ -216,6 +217,17 @@
     </div>
 
     <div class="sett-card" style="margin-top:16px;">
+      <h3>Help &amp; Shortcuts</h3>
+      <div class="sett-row">
+        <div>
+          <label>Keyboard Shortcuts &amp; Principles</label>
+          <small>View full shortcut reference &amp; Hifz spaced repetition guide.</small>
+        </div>
+        <button class="btn-secondary" onclick="document.getElementById('dlgHelp').showModal()">View Guide ⌨️</button>
+      </div>
+    </div>
+
+    <div class="sett-card" style="margin-top:16px;">
       <h3>Data Portability</h3>
       <div class="sett-row">
         <div>
@@ -394,6 +406,71 @@
         ✓ Real-Time Cloudflare Sync Active
       </div>
       <button class="btn-danger" id="btnSignOut" style="margin-top:16px;width:100%;">Sign Out</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Keyboard Shortcuts & Help Guide Modal -->
+<dialog id="dlgHelp">
+  <div class="modal-overlay" style="max-width:540px;">
+    <button class="close-top" onclick="document.getElementById('dlgHelp').close()">✕</button>
+    <h3 class="modal-title">⌨️ Keyboard Shortcuts &amp; Guide</h3>
+    <p style="font-size:0.78rem;color:var(--ink2);margin-bottom:14px;">Master HifzFlow with fast desktop shortcuts &amp; spaced repetition principles.</p>
+
+    <!-- Section 1: Keyboard Shortcuts -->
+    <div style="margin-bottom:16px;">
+      <h4 style="font-size:0.82rem;font-weight:800;color:var(--gold);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;">Global Navigation</h4>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.75rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Home Tab</span> <div><kbd class="kbd">1</kbd> <kbd class="kbd">H</kbd></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Revise Tab</span> <div><kbd class="kbd">2</kbd> <kbd class="kbd">R</kbd></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Quran Browser</span> <div><kbd class="kbd">3</kbd> <kbd class="kbd">Q</kbd></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Log History</span> <div><kbd class="kbd">4</kbd> <kbd class="kbd">L</kbd></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Insights</span> <div><kbd class="kbd">5</kbd> <kbd class="kbd">I</kbd></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Settings</span> <div><kbd class="kbd">6</kbd> <kbd class="kbd">S</kbd></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;grid-column:span 2;">
+          <span>Toggle Help &amp; Shortcuts</span> <div><kbd class="kbd">?</kbd> <kbd class="kbd">Shift+/</kbd></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Revision Session Shortcuts -->
+    <div style="margin-bottom:16px;">
+      <h4 style="font-size:0.82rem;font-weight:800;color:var(--gold);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em;">Practice &amp; Revision Mode</h4>
+      <div style="display:grid;grid-template-columns:1fr;gap:6px;font-size:0.75rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Reveal Arabic Text</span> <div><kbd class="kbd">Space</kbd> <kbd class="kbd">Enter</kbd> <kbd class="kbd">↓</kbd></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Grade Weak 🔴</span> <div><kbd class="kbd">1</kbd> <kbd class="kbd">J</kbd> <kbd class="kbd">←</kbd></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Grade Medium 🟡</span> <div><kbd class="kbd">2</kbd> <kbd class="kbd">K</kbd> <kbd class="kbd">↑</kbd></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Grade Strong 🟢</span> <div><kbd class="kbd">3</kbd> <kbd class="kbd">L</kbd> <kbd class="kbd">→</kbd></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);padding:6px 10px;border-radius:6px;">
+          <span>Close / Exit Overlay</span> <kbd class="kbd">Esc</kbd>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: Memorization Principles -->
+    <div style="background:var(--card2);padding:12px;border-radius:10px;border:1px solid var(--line2);font-size:0.75rem;line-height:1.5;">
+      <b style="color:var(--acc);display:block;margin-bottom:4px;">💡 Hifz Spaced Repetition Principle</b>
+      <p style="margin:0;color:var(--ink2);">The intelligent SM-2 algorithm schedules your weak verses (🔴) to repeat every 1 day, medium verses (🟡) every 4 days, and strong verses (🟢) every 14 days, ensuring total coverage without forgetting.</p>
     </div>
   </div>
 </dialog>

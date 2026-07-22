@@ -259,7 +259,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.3.5 (updated 2026-07-21 19:48)`;
+    verDiv.textContent = `v1.4.0 (updated 2026-07-22 08:41)`;
   }
 }
 
@@ -922,8 +922,85 @@ function resetApplication() {
   }
 }
 
+/* ============ KEYBOARD SHORTCUTS & HELP SYSTEM ============ */
+export function handleKeyDown(e) {
+  // Ignore inside text input elements
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+  if (e.target.isContentEditable) return;
+
+  const practiceModal = document.getElementById('practice');
+  const isPracticeOpen = practiceModal && practiceModal.classList.contains('open');
+  const helpDialog = document.getElementById('dlgHelp');
+
+  // Help dialog toggle ('?' or 'Shift + /')
+  if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+    e.preventDefault();
+    if (helpDialog) {
+      if (helpDialog.open) helpDialog.close();
+      else helpDialog.showModal();
+    }
+    return;
+  }
+
+  // Escape key closes help modal or practice session
+  if (e.key === 'Escape') {
+    if (helpDialog && helpDialog.open) {
+      helpDialog.close();
+      return;
+    }
+    if (isPracticeOpen) {
+      endSession(false);
+      return;
+    }
+  }
+
+  // Practice session specific shortcuts
+  if (isPracticeOpen) {
+    if (e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const revealTrigger = document.getElementById('hidTextReveal');
+      if (revealTrigger && !revealTrigger.classList.contains('revealed')) {
+        revealTrigger.click();
+      }
+      return;
+    }
+
+    if (['1', 'j', 'J', 'ArrowLeft'].includes(e.key)) {
+      e.preventDefault();
+      gradePractice(1);
+      return;
+    }
+
+    if (['2', 'k', 'K', 'ArrowUp'].includes(e.key)) {
+      e.preventDefault();
+      gradePractice(2);
+      return;
+    }
+
+    if (['3', 'l', 'L', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+      gradePractice(3);
+      return;
+    }
+    return;
+  }
+
+  // Global tab navigation shortcuts
+  if (e.key === '1' || e.key === 'h' || e.key === 'H') { go('home'); }
+  else if (e.key === '2' || e.key === 'r' || e.key === 'R') { go('revise'); }
+  else if (e.key === '3' || e.key === 'q' || e.key === 'Q') { go('quran'); }
+  else if (e.key === '4' || e.key === 'l' || e.key === 'L') { go('history'); }
+  else if (e.key === '5' || e.key === 'i' || e.key === 'I') { go('insights'); }
+  else if (e.key === '6' || e.key === 's' || e.key === 'S') { go('settings'); }
+}
+
 /* ============ EVENT LISTENERS & BOOTSTRAP ============ */
 function setupEventListeners() {
+  document.addEventListener('keydown', handleKeyDown);
+
+  const helpBtn = document.getElementById('helpBtn');
+  if (helpBtn) helpBtn.onclick = () => document.getElementById('dlgHelp').showModal();
+
   document.querySelectorAll('nav .nav-btn').forEach(btn => {
     btn.onclick = () => go(btn.dataset.v);
   });
