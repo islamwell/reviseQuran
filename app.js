@@ -371,11 +371,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.5.6 (updated 2026-07-23 20:45)`;  
+    verDiv.textContent = `v1.5.7 (updated 2026-07-23 20:45)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.5.6`;
+    settVerBadge.textContent = `v1.5.7`;
   }
 }
 
@@ -986,16 +986,18 @@ export function toggleAyahTrack(sNum, idx, track) {
     iconEl.textContent = scale.icon;
   }
 
-  // Scroll to next ayah within sheet-content for fast rating flow
+  // Scroll to next ayah within sheet-content after a 1 second delay for rating flow
   const nextIdx = idx + 1;
   const hasNext = nextIdx < surah.ayahs.length;
   if (hasNext) {
-    const nextCard = document.getElementById(`ayah-card-${sNum}-${nextIdx}`);
-    const sheetContent = document.getElementById('ayahSheetContent');
-    if (nextCard && sheetContent) {
-      const cardTop = nextCard.offsetTop;
-      sheetContent.scrollTo({ top: cardTop - 60, behavior: 'smooth' });
-    }
+    setTimeout(() => {
+      const nextCard = document.getElementById(`ayah-card-${sNum}-${nextIdx}`);
+      const sheetContent = document.getElementById('ayahSheetContent');
+      if (nextCard && sheetContent) {
+        const cardTop = nextCard.offsetTop;
+        sheetContent.scrollTo({ top: cardTop - 60, behavior: 'smooth' });
+      }
+    }, 1000);
   }
 }
 window.toggleAyahTrack = toggleAyahTrack;
