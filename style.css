@@ -2227,6 +2227,46 @@ input:checked + .slider:before {
   margin: 0 1px;
 }
 
+/* ============ SURAH CARD & HEATMAP GRADIENT COLOR FILLS ============ */
+.surah-card.card-strong,
+.hm-cell.cell-strong {
+  background: linear-gradient(135deg, rgba(22, 117, 102, 0.42) 0%, rgba(15, 60, 52, 0.25) 100%) !important;
+  border: 1.5px solid rgba(61, 220, 151, 0.55) !important;
+  box-shadow: 0 4px 16px rgba(22, 117, 102, 0.25) !important;
+}
+
+.surah-card.card-medium,
+.hm-cell.cell-medium {
+  background: linear-gradient(135deg, rgba(211, 156, 67, 0.42) 0%, rgba(95, 68, 25, 0.25) 100%) !important;
+  border: 1.5px solid rgba(211, 156, 67, 0.55) !important;
+  box-shadow: 0 4px 16px rgba(211, 156, 67, 0.25) !important;
+}
+
+.surah-card.card-weak,
+.hm-cell.cell-weak {
+  background: linear-gradient(135deg, rgba(224, 86, 86, 0.42) 0%, rgba(95, 25, 25, 0.25) 100%) !important;
+  border: 1.5px solid rgba(224, 86, 86, 0.55) !important;
+  box-shadow: 0 4px 16px rgba(224, 86, 86, 0.25) !important;
+}
+
+[data-theme="light"] .surah-card.card-strong,
+[data-theme="light"] .hm-cell.cell-strong {
+  background: linear-gradient(135deg, rgba(22, 117, 102, 0.18) 0%, rgba(162, 222, 208, 0.35) 100%) !important;
+  border: 1.5px solid rgba(22, 117, 102, 0.45) !important;
+}
+
+[data-theme="light"] .surah-card.card-medium,
+[data-theme="light"] .hm-cell.cell-medium {
+  background: linear-gradient(135deg, rgba(211, 156, 67, 0.18) 0%, rgba(245, 222, 179, 0.35) 100%) !important;
+  border: 1.5px solid rgba(211, 156, 67, 0.45) !important;
+}
+
+[data-theme="light"] .surah-card.card-weak,
+[data-theme="light"] .hm-cell.cell-weak {
+  background: linear-gradient(135deg, rgba(224, 86, 86, 0.18) 0%, rgba(255, 204, 204, 0.35) 100%) !important;
+  border: 1.5px solid rgba(224, 86, 86, 0.45) !important;
+}
+
 
 
 

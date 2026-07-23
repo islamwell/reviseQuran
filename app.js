@@ -152,15 +152,23 @@ export function calculateStrength(id, track) {
   const st = S.stats[id]?.[track];
   if (!st || !st.last) return null;
   const elapsedDays = (Date.now() - st.last) / 86400000;
+  const basePct = ratingToStrength(st.lvl);
   const halfLife = Math.max(st.iv, 0.1);
-  return Math.max(0, Math.round(100 * Math.exp(-elapsedDays / halfLife)));
+  return Math.max(0, Math.round(basePct * Math.exp(-elapsedDays / halfLife)));
 }
 
 export function getCombinedStrength(id) {
+  const parts = id.split(':');
+  const sNum = parseInt(parts[0]);
   const a = calculateStrength(id, 'a');
   const m = calculateStrength(id, 'm');
-  if (a === null && m === null) return null;
-  return Math.round(((a ?? 0) + (m ?? 0)) / 2);
+  if (a === null && m === null) {
+    if (isSurahMemorized(sNum)) return 95;
+    return null;
+  }
+  const aVal = a ?? 95;
+  const mVal = m ?? 95;
+  return Math.round((aVal + mVal) / 2);
 }
 
 // 9-Point Scale Rating Update
@@ -211,7 +219,7 @@ export function isSurahMemorized(sNum) {
 
 export function getSurahRollup(sNum) {
   const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
-  if (!surah || !surah.ayahs) return { status: "Not Started", memCount: 0, total: 0, pct: 0, avgStr: 0 };
+  if (!surah || !surah.ayahs) return { status: "Not Started", memCount: 0, total: 0, pct: 0, avgStr: 0, strengthClass: "" };
   
   const total = surah.ayahs.length;
   let memCount = 0;
@@ -228,11 +236,19 @@ export function getSurahRollup(sNum) {
     }
   });
   
-  const status = memCount === 0 ? "Not Started" : (memCount === total ? "Complete" : "Partial");
-  const avgStr = testedCount ? Math.round(totalStrengthSum / testedCount) : 0;
-  const pct = Math.round((memCount / total) * 100);
+  const isKnown = isSurahMemorized(sNum);
+  const status = !isKnown && memCount === 0 ? "Not Started" : (memCount === total || isKnown ? "Complete" : "Partial");
+  const avgStr = testedCount ? Math.round(totalStrengthSum / testedCount) : (isKnown ? 95 : 0);
+  const pct = isKnown ? 100 : Math.round((memCount / total) * 100);
   
-  return { status, memCount, total, pct, avgStr };
+  let strengthClass = "";
+  if (isKnown) {
+    if (avgStr >= 80) strengthClass = "card-strong cell-strong";
+    else if (avgStr >= 50) strengthClass = "card-medium cell-medium";
+    else strengthClass = "card-weak cell-weak";
+  }
+  
+  return { status, memCount: isKnown ? total : memCount, total, pct, avgStr, strengthClass };
 }
 
 // Bulk mark entire surah as memorized
@@ -264,7 +280,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.4.2 (updated 2026-07-22 08:45)`;
+    verDiv.textContent = `v1.5.0 (updated 2026-07-23 19:50)`;
   }
 }
 
@@ -399,15 +415,11 @@ function renderHome() {
       const rollup = getSurahRollup(sNum);
       const isKnown = S.memorized[sNum];
       
-      const aHue = (rollup.avgStr / 100 * 120).toFixed(1);
-      const stateLabel = rollup.avgStr < 35 && isKnown ? 'red' : 'green';
-      const hueStyles = `--h: ${aHue}; --mh: ${aHue};`;
-      
       gridHtml += `
-        <button class="hm-cell ${isKnown ? 'reviewed' : 'untouched'}" data-state="${stateLabel}" style="${isKnown ? hueStyles : ''}" onclick="openSurahDetail(${sNum})">
-          <span style="font-size:0.65rem;opacity:0.75">#${sNum}</span>
+        <button class="hm-cell ${isKnown ? rollup.strengthClass : 'untouched'}" onclick="openSurahDetail(${sNum})">
+          <span style="font-size:0.65rem;opacity:0.85">#${sNum}</span>
           <b style="font-size:0.85rem">${surah.name}</b>
-          <span style="font-size:0.6rem;color:var(--ink3)">${rollup.memCount}/${rollup.total} ayahs</span>
+          <span style="font-size:0.6rem;opacity:0.85">${rollup.memCount}/${rollup.total} ayahs</span>
           <span class="tip">
             <span class="row"><b>${surah.name}</b> <span>${surah.ar}</span></span>
             <span class="row"><b>Status:</b> <span>${rollup.status}</span></span>
@@ -508,7 +520,7 @@ function renderQuran() {
     const isKnown = S.memorized[sNum];
     
     html += `
-      <div class="surah-card">
+      <div class="surah-card ${isKnown ? rollup.strengthClass : ''}">
         <div class="surah-top">
           <span class="surah-num">
             <svg viewBox="0 0 40 40"><path d="M20 2 24 10 32 8 30 16 38 20 30 24 32 32 24 30 20 38 16 30 8 32 10 24 2 20 10 16 8 8 16 10Z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
@@ -702,7 +714,7 @@ export function checkReminderAlarms() {
 }
 
 /* ============ AYAH RATING DETAIL DIALOG ============ */
-export function openSurahDetail(sNum) {
+export function openSurahDetail(sNum, scrollToIndex = null) {
   const surah = QURAN_DATA[sNum];
   if (!surah) return;
   
@@ -712,10 +724,10 @@ export function openSurahDetail(sNum) {
   content.innerHTML = `
     <div class="grab"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <button class="btn-secondary" style="padding:6px 14px;font-size:0.8rem;font-weight:800;display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="document.getElementById('dlgAyahDetail').close()">
+      <button class="btn-secondary" style="padding:6px 14px;font-size:0.8rem;font-weight:800;display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="saveState(); renderHome(); renderQuran(); renderRevise(); document.getElementById('dlgAyahDetail').close()">
         ← Back to Previous Screen
       </button>
-      <button class="close-top" style="position:static;" onclick="document.getElementById('dlgAyahDetail').close()">✕</button>
+      <button class="close-top" style="position:static;" onclick="saveState(); renderHome(); renderQuran(); renderRevise(); document.getElementById('dlgAyahDetail').close()">✕</button>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <span class="ref">${surah.name} · Surah ${surah.n}</span>
@@ -737,7 +749,7 @@ export function openSurahDetail(sNum) {
         const mScale = RATING_SCALE.find(r => r.level === mLvl) || RATING_SCALE[0];
         
         return `
-          <div style="padding:14px 0;border-bottom:1px solid var(--line);">
+          <div id="ayah-card-${sNum}-${idx}" style="padding:14px 0;border-bottom:1px solid var(--line);scroll-margin-top:20px;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:0.75rem;font-weight:800;color:var(--gold);">Ayah ${idx + 1}</span>
               <div style="display:flex;gap:6px;">
@@ -753,7 +765,7 @@ export function openSurahDetail(sNum) {
               <small style="font-size:0.65rem;font-weight:800;color:var(--ink3);text-transform:uppercase;">Set Memorization Rating</small>
               <div style="display:flex;gap:6px;margin-top:4px;">
                 ${RATING_SCALE.map(r => `
-                  <button style="flex:1;padding:8px 10px;font-size:0.75rem;border-radius:8px;background:${r.color}18;border:1px solid ${r.color}44;color:${r.color};font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;" onclick="setAyahRating('${id}','a',${r.level}); setAyahRating('${id}','m',${r.level}); openSurahDetail(${sNum});">
+                  <button style="flex:1;padding:8px 10px;font-size:0.75rem;border-radius:8px;background:${r.color}18;border:1px solid ${r.color}44;color:${r.color};font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;" onclick="rateAyahAndNext(${sNum}, ${idx}, ${r.level})">
                     <span>${r.icon}</span> <span>${r.label}</span>
                   </button>
                 `).join('')}
@@ -765,15 +777,43 @@ export function openSurahDetail(sNum) {
     </div>
     
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);">
-      <button class="btn-secondary" style="width:100%;padding:12px;font-size:0.88rem;font-weight:800;cursor:pointer;" onclick="document.getElementById('dlgAyahDetail').close()">
+      <button class="btn-secondary" style="width:100%;padding:12px;font-size:0.88rem;font-weight:800;cursor:pointer;" onclick="saveState(); renderHome(); renderQuran(); renderRevise(); document.getElementById('dlgAyahDetail').close()">
         ← Back to Previous Screen
       </button>
     </div>
   `;
   
   const dlg = document.getElementById('dlgAyahDetail');
-  if (dlg) dlg.showModal();
+  if (dlg && !dlg.open) dlg.showModal();
+
+  if (scrollToIndex !== null) {
+    setTimeout(() => {
+      const targetCard = document.getElementById(`ayah-card-${sNum}-${scrollToIndex}`);
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
+  }
 }
+
+export function rateAyahAndNext(sNum, idx, level) {
+  const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
+  if (!surah) return;
+  
+  const id = idOf(sNum, idx);
+  setAyahRating(id, 'a', level);
+  setAyahRating(id, 'm', level);
+  
+  const nextIdx = idx + 1;
+  const hasNext = nextIdx < surah.ayahs.length;
+  
+  openSurahDetail(sNum, hasNext ? nextIdx : idx);
+  
+  if (!hasNext) {
+    toast("Masha'Allah! All ayahs in this Surah rated 🌟");
+  }
+}
+window.rateAyahAndNext = rateAyahAndNext;
 
 export function openAyahSheet(id) {
   const parts = id.split(':');
@@ -1019,6 +1059,23 @@ export function handleKeyDown(e) {
 /* ============ EVENT LISTENERS & BOOTSTRAP ============ */
 function setupEventListeners() {
   document.addEventListener('keydown', handleKeyDown);
+
+  // Tap outside modal card (backdrop click) to save & close ratings screen
+  ['dlgAyahDetail', 'dlgHelp', 'dlgAuth', 'dlgAddLog', 'dlgSessionConfig'].forEach(dlgId => {
+    const dlg = document.getElementById(dlgId);
+    if (dlg) {
+      dlg.addEventListener('click', (e) => {
+        const inner = dlg.querySelector('.sheet-content, .modal-overlay, .ob-card');
+        if (inner && !inner.contains(e.target)) {
+          saveState();
+          renderHome();
+          renderQuran();
+          renderRevise();
+          dlg.close();
+        }
+      });
+    }
+  });
 
   const helpBtn = document.getElementById('helpBtn');
   if (helpBtn) helpBtn.onclick = () => document.getElementById('dlgHelp').showModal();
