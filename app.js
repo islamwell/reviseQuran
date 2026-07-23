@@ -20,6 +20,68 @@ export function removeArabicDiacritics(text) {
   return text.replace(/[\u064B-\u0653\u0670\u0654\u0655]/g, "").trim();
 }
 
+/**
+ * Build a proportional CSS gradient for a surah block based on
+ * the weak / medium / strong ayah counts.
+ * Returns { background, border, shadow } CSS value strings.
+ */
+export function buildProportionalGradient(weakCount, medCount, strongCount, isDark = true) {
+  const total = weakCount + medCount + strongCount;
+  if (total === 0) return null; // untouched
+
+  const wPct = (weakCount / total) * 100;
+  const mPct = (medCount / total) * 100;
+  const sPct = (strongCount / total) * 100;
+
+  // Color definitions (dark mode / light mode)
+  const colors = isDark ? {
+    weak:   { r: 224, g: 86,  b: 86  },
+    medium: { r: 234, g: 179, b: 8   },
+    strong: { r: 22,  g: 163, b: 120 }
+  } : {
+    weak:   { r: 224, g: 86,  b: 86  },
+    medium: { r: 234, g: 179, b: 8   },
+    strong: { r: 22,  g: 163, b: 120 }
+  };
+
+  const opacity = isDark ? 0.42 : 0.22;
+
+  // Build gradient stops
+  const stops = [];
+  let pos = 0;
+
+  if (wPct > 0) {
+    const c = colors.weak;
+    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
+    pos += wPct;
+    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
+  }
+  if (mPct > 0) {
+    const c = colors.medium;
+    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
+    pos += mPct;
+    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
+  }
+  if (sPct > 0) {
+    const c = colors.strong;
+    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
+    pos += sPct;
+    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
+  }
+
+  const background = `linear-gradient(135deg, ${stops.join(', ')})`;
+
+  // Border & shadow: blend the dominant color with proportional weighting
+  const blendR = Math.round((weakCount * colors.weak.r + medCount * colors.medium.r + strongCount * colors.strong.r) / total);
+  const blendG = Math.round((weakCount * colors.weak.g + medCount * colors.medium.g + strongCount * colors.strong.g) / total);
+  const blendB = Math.round((weakCount * colors.weak.b + medCount * colors.medium.b + strongCount * colors.strong.b) / total);
+
+  const border = `1.5px solid rgba(${blendR},${blendG},${blendB},${isDark ? 0.55 : 0.45})`;
+  const shadow = `0 4px 16px rgba(${blendR},${blendG},${blendB},${isDark ? 0.25 : 0.15})`;
+
+  return { background, border, shadow };
+}
+
 export function cleanEnName(name) {
   if (!name) return "";
   let s = name.replace(/^surah\s+/i, '').trim();
@@ -237,12 +299,15 @@ export function isSurahMemorized(sNum) {
 
 export function getSurahRollup(sNum) {
   const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
-  if (!surah || !surah.ayahs) return { status: "Not Started", memCount: 0, total: 0, pct: 0, avgStr: 0, strengthClass: "" };
+  if (!surah || !surah.ayahs) return { status: "Not Started", memCount: 0, total: 0, pct: 0, avgStr: 0, strengthClass: "", weakCount: 0, medCount: 0, strongCount: 0 };
   
   const total = surah.ayahs.length;
   let memCount = 0;
   let totalStrengthSum = 0;
   let testedCount = 0;
+  let weakCount = 0;
+  let medCount = 0;
+  let strongCount = 0;
   
   surah.ayahs.forEach((_, idx) => {
     const id = idOf(sNum, idx);
@@ -251,6 +316,9 @@ export function getSurahRollup(sNum) {
       memCount++;
       totalStrengthSum += comb;
       testedCount++;
+      if (comb >= 70) strongCount++;
+      else if (comb >= 40) medCount++;
+      else weakCount++;
     }
   });
   
@@ -259,6 +327,11 @@ export function getSurahRollup(sNum) {
   const avgStr = testedCount ? Math.round(totalStrengthSum / testedCount) : (isKnown ? 95 : 0);
   const pct = isKnown ? 100 : Math.round((memCount / total) * 100);
   
+  // If surah is memorized but no individual ayah stats, treat all as strong
+  if (isKnown && testedCount === 0) {
+    strongCount = total;
+  }
+  
   let strengthClass = "";
   if (isKnown) {
     if (avgStr >= 80) strengthClass = "card-strong cell-strong";
@@ -266,7 +339,7 @@ export function getSurahRollup(sNum) {
     else strengthClass = "card-weak cell-weak";
   }
   
-  return { status, memCount: isKnown ? total : memCount, total, pct, avgStr, strengthClass };
+  return { status, memCount: isKnown ? total : memCount, total, pct, avgStr, strengthClass, weakCount, medCount, strongCount };
 }
 
 // Bulk mark entire surah as memorized
@@ -298,11 +371,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.5.5 (updated 2026-07-23 20:45)`;  
+    verDiv.textContent = `v1.5.6 (updated 2026-07-23 20:45)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.5.5`;
+    settVerBadge.textContent = `v1.5.6`;
   }
 }
 
@@ -429,6 +502,7 @@ function renderHome() {
   // Render Surah Heatmap Grid (Surahs 63-114)
   const grid = document.getElementById('surahHeatmapGrid');
   if (grid) {
+    const isDark = document.documentElement.dataset.theme !== 'light';
     let gridHtml = '';
     for (let sNum = 63; sNum <= 114; sNum++) {
       const surah = QURAN_DATA[sNum];
@@ -440,8 +514,21 @@ function renderHome() {
       const arNameClean = cleanArName(surah.ar);
       const arNameNoVowels = removeArabicDiacritics(arNameClean);
       
+      let inlineStyle = '';
+      let cellClass = 'hm-cell';
+      
+      if (isKnown) {
+        const grad = buildProportionalGradient(rollup.weakCount, rollup.medCount, rollup.strongCount, isDark);
+        if (grad) {
+          inlineStyle = `background:${grad.background};border:${grad.border};box-shadow:${grad.shadow};`;
+          cellClass = 'hm-cell hm-colored';
+        }
+      } else {
+        cellClass = 'hm-cell untouched';
+      }
+      
       gridHtml += `
-        <button class="hm-cell ${isKnown ? rollup.strengthClass : 'untouched'}" onclick="openSurahDetail(${sNum})">
+        <button class="${cellClass}" style="${inlineStyle}" onclick="openSurahDetail(${sNum})">
           <span class="hm-num">${sNum}</span>
           <span class="hm-ar">${arNameNoVowels}</span>
           <b class="hm-en">${enNameClean}</b>
@@ -450,6 +537,9 @@ function renderHome() {
             <span class="row"><b>${enNameClean}</b> <span>${arNameClean}</span></span>
             <span class="row"><b>Status:</b> <span>${rollup.status}</span></span>
             <span class="row"><b>Avg Strength:</b> <span>${rollup.avgStr}%</span></span>
+            <span class="row"><b>🔴 Weak:</b> <span>${rollup.weakCount}</span></span>
+            <span class="row"><b>🟡 Medium:</b> <span>${rollup.medCount}</span></span>
+            <span class="row"><b>🟢 Strong:</b> <span>${rollup.strongCount}</span></span>
           </span>
         </button>
       `;

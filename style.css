@@ -1019,6 +1019,46 @@ header {
   border-color: var(--line);
 }
 
+.hm-cell.hm-colored .hm-num {
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.hm-cell.hm-colored .hm-ar {
+  color: rgba(255, 255, 255, 0.92) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.hm-cell.hm-colored .hm-en {
+  color: rgba(255, 255, 255, 0.85) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.hm-cell.hm-colored .hm-count {
+  background: rgba(0, 0, 0, 0.25);
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+[data-theme="light"] .hm-cell.hm-colored .hm-num {
+  color: #1f2937;
+  text-shadow: none;
+}
+
+[data-theme="light"] .hm-cell.hm-colored .hm-ar {
+  color: #111827 !important;
+  text-shadow: none;
+}
+
+[data-theme="light"] .hm-cell.hm-colored .hm-en {
+  color: #374151 !important;
+  text-shadow: none;
+}
+
+[data-theme="light"] .hm-cell.hm-colored .hm-count {
+  background: rgba(0, 0, 0, 0.1);
+  color: #1f2937 !important;
+}
+
 .hm-cell.reviewed {
   background: hsl(var(--h) 42% 12%);
   border: 1px solid hsl(var(--h) 38% 26%);
