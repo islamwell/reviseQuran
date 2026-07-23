@@ -944,10 +944,14 @@ header {
 }
 
 .hm-cell {
-  aspect-ratio: 1;
+  min-height: 84px;
+  padding: 8px 6px;
   border-radius: 12px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   font-size: 0.72rem;
   font-weight: 800;
   color: rgba(255, 255, 255, 0.95);
@@ -2238,9 +2242,9 @@ input:checked + .slider:before {
 
 .surah-card.card-medium,
 .hm-cell.cell-medium {
-  background: linear-gradient(135deg, rgba(211, 156, 67, 0.42) 0%, rgba(95, 68, 25, 0.25) 100%) !important;
-  border: 1.5px solid rgba(211, 156, 67, 0.55) !important;
-  box-shadow: 0 4px 16px rgba(211, 156, 67, 0.25) !important;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.5) 0%, rgba(140, 95, 10, 0.3) 100%) !important;
+  border: 1.5px solid rgba(234, 179, 8, 0.85) !important;
+  box-shadow: 0 4px 16px rgba(234, 179, 8, 0.35) !important;
 }
 
 .surah-card.card-weak,
@@ -2258,8 +2262,8 @@ input:checked + .slider:before {
 
 [data-theme="light"] .surah-card.card-medium,
 [data-theme="light"] .hm-cell.cell-medium {
-  background: linear-gradient(135deg, rgba(211, 156, 67, 0.18) 0%, rgba(245, 222, 179, 0.35) 100%) !important;
-  border: 1.5px solid rgba(211, 156, 67, 0.45) !important;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.25) 0%, rgba(254, 240, 138, 0.45) 100%) !important;
+  border: 1.5px solid rgba(234, 179, 8, 0.7) !important;
 }
 
 [data-theme="light"] .surah-card.card-weak,

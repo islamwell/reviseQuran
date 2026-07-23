@@ -6,9 +6,22 @@
 /* ============ 3-COLOR RATING SCALE CONFIG ============ */
 export const RATING_SCALE = [
   { level: 1, label: "Weak", icon: "🔴", pct: 30, iv: 1, class: "lvl-weak", color: "#e05656" },
-  { level: 2, label: "Medium", icon: "🟡", pct: 65, iv: 4, class: "lvl-medium", color: "#d39c43" },
+  { level: 2, label: "Medium", icon: "🟡", pct: 65, iv: 4, class: "lvl-medium", color: "#eab308" },
   { level: 3, label: "Strong", icon: "🟢", pct: 95, iv: 14, class: "lvl-strong", color: "#167566" }
 ];
+
+export function cleanArName(name) {
+  if (!name) return "";
+  return name.replace(/^سُورَةُ\s*/g, '').replace(/^سورة\s*/g, '').trim();
+}
+
+export function cleanEnName(name) {
+  if (!name) return "";
+  let s = name.replace(/^surah\s+/i, '').trim();
+  s = s.replace(/^(Al|An|At|As|Az|Ad|Ar|Ash|Ath|Aa|Al-)\b[- ]?/i, '');
+  s = s.replace(/^(Al|An|At|As|Az|Ad|Ar|Ash|Ath)-/i, '');
+  return s.trim();
+}
 
 export function ratingToStrength(lvl) {
   const item = RATING_SCALE.find(r => r.level === lvl);
@@ -280,11 +293,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.5.3 (updated 2026-07-23 20:22)`;  
+    verDiv.textContent = `v1.5.4 (updated 2026-07-23 20:35)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.5.3`;
+    settVerBadge.textContent = `v1.5.4`;
   }
 }
 
@@ -418,17 +431,19 @@ function renderHome() {
       
       const rollup = getSurahRollup(sNum);
       const isKnown = S.memorized[sNum];
+      const enNameClean = cleanEnName(surah.name);
+      const arNameClean = cleanArName(surah.ar);
       
       gridHtml += `
         <button class="hm-cell ${isKnown ? rollup.strengthClass : 'untouched'}" onclick="openSurahDetail(${sNum})">
-          <span style="font-size:0.65rem;opacity:0.85">#${sNum}</span>
-          <b style="font-size:0.85rem">${surah.name}</b>
-          <span style="font-size:0.6rem;opacity:0.85">${rollup.memCount}/${rollup.total} ayahs</span>
+          <span style="font-size:1.1rem;font-weight:800;color:var(--gold);line-height:1.1;">${sNum}</span>
+          <b style="font-size:0.82rem;margin:3px 0 1px;line-height:1.2;color:var(--ink);">${enNameClean}</b>
+          <span style="font-size:0.95rem;line-height:1.2;font-family:var(--font-arabic);color:var(--ink2);">${arNameClean}</span>
+          <span style="font-size:0.6rem;opacity:0.8;margin-top:2px;">${rollup.memCount}/${rollup.total} ayahs</span>
           <span class="tip">
-            <span class="row"><b>${surah.name}</b> <span>${surah.ar}</span></span>
+            <span class="row"><b>${enNameClean}</b> <span>${arNameClean}</span></span>
             <span class="row"><b>Status:</b> <span>${rollup.status}</span></span>
             <span class="row"><b>Avg Strength:</b> <span>${rollup.avgStr}%</span></span>
-            <span class="hint">Click to open Surah details</span>
           </span>
         </button>
       `;
@@ -522,6 +537,8 @@ function renderQuran() {
     
     const rollup = getSurahRollup(sNum);
     const isKnown = S.memorized[sNum];
+    const enNameClean = cleanEnName(surah.name);
+    const arNameClean = cleanArName(surah.ar);
     
     html += `
       <div class="surah-card ${isKnown ? rollup.strengthClass : ''}">
@@ -531,10 +548,10 @@ function renderQuran() {
             ${surah.n}
           </span>
           <div class="surah-meta">
-            <b>${surah.name}</b>
+            <b>${enNameClean}</b>
             <span>${surah.en} · ${surah.ayahs.length} Ayahs · Juz ${surah.juz}</span>
           </div>
-          <span class="surah-arname">${surah.ar}</span>
+          <span class="surah-arname">${arNameClean}</span>
           <button class="know-toggle ${isKnown ? 'on' : ''}" onclick="toggleSurahMemorized(${surah.n})">
             ${isKnown ? '✓ Known' : 'I know this'}
           </button>
@@ -717,7 +734,24 @@ export function checkReminderAlarms() {
   }
 }
 
-/* ============ AYAH RATING DETAIL DIALOG ============ */
+/* ============ AYAH RATING DETAIL DIALOG & INTERACTION ============ */
+export function closeSurahDetail() {
+  saveState();
+  renderHome();
+  renderQuran();
+  renderRevise();
+  const dlg = document.getElementById('dlgAyahDetail');
+  if (dlg) {
+    try {
+      if (dlg.open) dlg.close();
+    } catch (e) {
+      dlg.removeAttribute('open');
+      dlg.style.display = 'none';
+    }
+  }
+}
+window.closeSurahDetail = closeSurahDetail;
+
 export function openSurahDetail(sNum, scrollToIndex = null) {
   const surah = QURAN_DATA[sNum];
   if (!surah) return;
@@ -725,22 +759,33 @@ export function openSurahDetail(sNum, scrollToIndex = null) {
   const content = document.getElementById('ayahSheetContent');
   if (!content) return;
   
+  const arClean = cleanArName(surah.ar);
+  const enClean = cleanEnName(surah.name);
+
   content.innerHTML = `
     <div class="grab"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-      <button class="btn-secondary" style="padding:6px 14px;font-size:0.8rem;font-weight:800;display:flex;align-items:center;gap:6px;cursor:pointer;" onclick="saveState(); renderHome(); renderQuran(); renderRevise(); document.getElementById('dlgAyahDetail').close()">
+      <button class="btn-secondary" style="padding:8px 16px;font-size:0.82rem;font-weight:800;display:flex;align-items:center;gap:6px;cursor:pointer;border-radius:8px;" onclick="closeSurahDetail()">
         ← Back to Previous Screen
       </button>
-      <button class="close-top" style="position:static;" onclick="saveState(); renderHome(); renderQuran(); renderRevise(); document.getElementById('dlgAyahDetail').close()">✕</button>
+      <button class="close-top" style="position:static;font-size:1.2rem;padding:6px 12px;cursor:pointer;" onclick="closeSurahDetail()">✕</button>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <span class="ref">${surah.name} · Surah ${surah.n}</span>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+      <span class="ref">${enClean} · ${surah.n}</span>
       <button class="know-toggle ${S.memorized[sNum] ? 'on' : ''}" onclick="toggleSurahMemorized(${surah.n}); openSurahDetail(${surah.n});">
-        ${S.memorized[sNum] ? '✓ Known' : 'I know this entire Surah'}
+        ${S.memorized[sNum] ? '✓ Known' : 'I know this Surah'}
       </button>
     </div>
-    <h2 style="font-size:1.3rem;font-weight:800;margin-top:10px;">${surah.name} <span class="ar">${surah.ar}</span></h2>
-    <p style="font-size:0.78rem;color:var(--ink2);margin-bottom:16px;">${surah.en} · ${surah.ayahs.length} Ayahs · Juz ${surah.juz}</p>
+    <h2 style="font-size:1.35rem;font-weight:800;margin-top:8px;display:flex;align-items:center;gap:10px;">
+      <span>${enClean}</span>
+      <span class="ar" style="font-family:var(--font-arabic);color:var(--gold);">${arClean}</span>
+    </h2>
+    <p style="font-size:0.78rem;color:var(--ink2);margin-bottom:14px;">${surah.en} · ${surah.ayahs.length} Ayahs · Juz ${surah.juz}</p>
+
+    <div style="margin-bottom:12px;padding:8px 12px;background:var(--bg2);border-radius:8px;font-size:0.72rem;color:var(--ink2);display:flex;align-items:center;justify-content:space-between;">
+      <span>💡 Tap Arabic or English text box to cycle rating:</span>
+      <span style="font-weight:800;color:var(--ink)">🔴 Weak → 🟡 Med → 🟢 Strong</span>
+    </div>
     
     <div class="ayah-list-detail">
       ${surah.ayahs.map((ay, idx) => {
@@ -751,42 +796,34 @@ export function openSurahDetail(sNum, scrollToIndex = null) {
         const mLvl = mSt?.lvl || (mSt ? strengthToRating(calculateStrength(id, 'm')) : null);
         const aScale = aLvl ? (RATING_SCALE.find(r => r.level === aLvl) || RATING_SCALE[0]) : null;
         const mScale = mLvl ? (RATING_SCALE.find(r => r.level === mLvl) || RATING_SCALE[0]) : null;
-        const arColor = aScale ? aScale.color : 'var(--ink)';
-        const enColor = mScale ? mScale.color : 'var(--ink2)';
-        const arBg = aScale ? `${aScale.color}12` : 'transparent';
-        const enBg = mScale ? `${mScale.color}10` : 'transparent';
-        const arBorder = aScale ? `2px solid ${aScale.color}55` : '2px solid transparent';
-        const enBorder = mScale ? `2px solid ${mScale.color}44` : '2px solid transparent';
+        
+        const arBg = aScale ? `${aScale.color}22` : 'var(--card2)';
+        const enBg = mScale ? `${mScale.color}1b` : 'var(--card2)';
+        const arBorder = aScale ? `2px solid ${aScale.color}aa` : '2px solid var(--line)';
+        const enBorder = mScale ? `2px solid ${mScale.color}88` : '2px solid var(--line)';
         
         return `
           <div id="ayah-card-${sNum}-${idx}" style="padding:14px 0;border-bottom:1px solid var(--line);scroll-margin-top:20px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
               <span style="font-size:0.75rem;font-weight:800;color:var(--gold);">Ayah ${idx + 1}</span>
             </div>
-            <div id="ayah-ar-${sNum}-${idx}" class="ar-big" style="font-size:1.35rem;line-height:2;margin:0 0 6px;padding:10px 14px;border-radius:10px;background:${arBg};border:${arBorder};transition:background 0.3s,border 0.3s;">${ay.ar}</div>
-            <div id="ayah-en-${sNum}-${idx}" class="en-big" style="font-size:0.85rem;padding:8px 12px;border-radius:8px;background:${enBg};border:${enBorder};transition:background 0.3s,border 0.3s;">${ay.en}</div>
             
-            <!-- 3 Color Quick Selector - Arabic -->
-            <div style="margin-top:12px;">
-              <small style="font-size:0.62rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:0.08em;">🕌 Arabic Recall</small>
-              <div style="display:flex;gap:6px;margin-top:5px;">
-                ${RATING_SCALE.map(r => `
-                  <button style="flex:1;padding:7px 8px;font-size:0.73rem;border-radius:8px;background:${r.color}18;border:1.5px solid ${r.color}44;color:${r.color};font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;" onclick="rateAyahTrack(${sNum}, ${idx}, 'a', ${r.level});event.stopPropagation();">
-                    <span>${r.icon}</span> <span>${r.label}</span>
-                  </button>
-                `).join('')}
-              </div>
+            <!-- Tap Arabic Text to Cycle Rating -->
+            <div id="ayah-ar-${sNum}-${idx}" 
+                 class="ar-big" 
+                 onclick="toggleAyahTrack(${sNum}, ${idx}, 'a'); event.stopPropagation();" 
+                 style="font-size:1.45rem;line-height:2;margin:0 0 8px;padding:12px 16px;border-radius:12px;background:${arBg};border:${arBorder};transition:all 0.25s ease;cursor:pointer;position:relative;user-select:none;">
+              <span>${ay.ar}</span>
+              <span id="ar-icon-${sNum}-${idx}" class="rating-icon-tag" style="position:absolute;top:6px;left:8px;font-size:0.8rem;">${aScale ? aScale.icon : ''}</span>
             </div>
-            <!-- 3 Color Quick Selector - Meaning -->
-            <div style="margin-top:8px;">
-              <small style="font-size:0.62rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:0.08em;">📖 Meaning / Translation</small>
-              <div style="display:flex;gap:6px;margin-top:5px;">
-                ${RATING_SCALE.map(r => `
-                  <button style="flex:1;padding:7px 8px;font-size:0.73rem;border-radius:8px;background:${r.color}18;border:1.5px solid ${r.color}44;color:${r.color};font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;" onclick="rateAyahTrack(${sNum}, ${idx}, 'm', ${r.level});event.stopPropagation();">
-                    <span>${r.icon}</span> <span>${r.label}</span>
-                  </button>
-                `).join('')}
-              </div>
+
+            <!-- Tap English Text to Cycle Rating -->
+            <div id="ayah-en-${sNum}-${idx}" 
+                 class="en-big" 
+                 onclick="toggleAyahTrack(${sNum}, ${idx}, 'm'); event.stopPropagation();" 
+                 style="font-size:0.9rem;padding:10px 14px;border-radius:10px;background:${enBg};border:${enBorder};transition:all 0.25s ease;cursor:pointer;position:relative;user-select:none;">
+              <span>${ay.en}</span>
+              <span id="en-icon-${sNum}-${idx}" class="rating-icon-tag" style="position:absolute;top:6px;right:8px;font-size:0.8rem;">${mScale ? mScale.icon : ''}</span>
             </div>
           </div>
         `;
@@ -794,16 +831,18 @@ export function openSurahDetail(sNum, scrollToIndex = null) {
     </div>
     
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line);">
-      <button class="btn-secondary" style="width:100%;padding:12px;font-size:0.88rem;font-weight:800;cursor:pointer;" onclick="saveState(); renderHome(); renderQuran(); renderRevise(); document.getElementById('dlgAyahDetail').close()">
+      <button class="btn-secondary" style="width:100%;padding:12px;font-size:0.88rem;font-weight:800;cursor:pointer;border-radius:10px;" onclick="closeSurahDetail()">
         ← Back to Previous Screen
       </button>
     </div>
   `;
   
   const dlg = document.getElementById('dlgAyahDetail');
-  if (dlg && !dlg.open) dlg.showModal();
+  if (dlg) {
+    dlg.style.display = '';
+    if (!dlg.open) dlg.showModal();
+  }
 
-  // Stop click events inside sheet-content from bubbling to the dialog backdrop handler
   const sheetContent = document.getElementById('ayahSheetContent');
   if (sheetContent) {
     sheetContent.onclick = (e) => e.stopPropagation();
@@ -820,33 +859,40 @@ export function openSurahDetail(sNum, scrollToIndex = null) {
   }
 }
 
-export function rateAyahTrack(sNum, idx, track, level) {
+export function toggleAyahTrack(sNum, idx, track) {
   const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
   if (!surah) return;
   
   const id = idOf(sNum, idx);
-  setAyahRating(id, track, level);
+  const st = getStatBlock(id, track);
   
-  // Update the corresponding text highlight color
-  const scale = RATING_SCALE.find(r => r.level === level) || RATING_SCALE[0];
-  if (track === 'a') {
-    const arEl = document.getElementById(`ayah-ar-${sNum}-${idx}`);
-    if (arEl) {
-      arEl.style.background = `${scale.color}12`;
-      arEl.style.border = `2px solid ${scale.color}55`;
-    }
-  } else {
-    const enEl = document.getElementById(`ayah-en-${sNum}-${idx}`);
-    if (enEl) {
-      enEl.style.background = `${scale.color}10`;
-      enEl.style.border = `2px solid ${scale.color}44`;
-    }
+  // Cycle: null/unrated (0) -> 1 (Weak 🔴) -> 2 (Medium 🟡) -> 3 (Strong 🟢) -> 1 ...
+  let nextLvl = 1;
+  if (st.lvl === 1) nextLvl = 2;
+  else if (st.lvl === 2) nextLvl = 3;
+  else if (st.lvl === 3) nextLvl = 1;
+  
+  setAyahRating(id, track, nextLvl);
+  
+  const scale = RATING_SCALE.find(r => r.level === nextLvl) || RATING_SCALE[0];
+  const elemId = track === 'a' ? `ayah-ar-${sNum}-${idx}` : `ayah-en-${sNum}-${idx}`;
+  const iconId = track === 'a' ? `ar-icon-${sNum}-${idx}` : `en-icon-${sNum}-${idx}`;
+  
+  const el = document.getElementById(elemId);
+  const iconEl = document.getElementById(iconId);
+  
+  if (el) {
+    el.style.background = `${scale.color}22`;
+    el.style.border = `2px solid ${scale.color}aa`;
+    el.style.boxShadow = `0 4px 14px ${scale.color}25`;
   }
-  
-  // After rating, scroll to the next ayah within the sheet-content
+  if (iconEl) {
+    iconEl.textContent = scale.icon;
+  }
+
+  // Scroll to next ayah within sheet-content for fast rating flow
   const nextIdx = idx + 1;
   const hasNext = nextIdx < surah.ayahs.length;
-  
   if (hasNext) {
     const nextCard = document.getElementById(`ayah-card-${sNum}-${nextIdx}`);
     const sheetContent = document.getElementById('ayahSheetContent');
@@ -854,18 +900,11 @@ export function rateAyahTrack(sNum, idx, track, level) {
       const cardTop = nextCard.offsetTop;
       sheetContent.scrollTo({ top: cardTop - 60, behavior: 'smooth' });
     }
-  } else {
-    toast("Masha'Allah! All ayahs in this Surah rated 🌟");
   }
 }
-window.rateAyahTrack = rateAyahTrack;
-
-// Legacy alias kept for any remaining references
-export function rateAyahAndNext(sNum, idx, level) {
-  rateAyahTrack(sNum, idx, 'a', level);
-  rateAyahTrack(sNum, idx, 'm', level);
-}
-window.rateAyahAndNext = rateAyahAndNext;
+window.toggleAyahTrack = toggleAyahTrack;
+window.rateAyahTrack = toggleAyahTrack;
+window.rateAyahAndNext = toggleAyahTrack;
 
 export function openAyahSheet(id) {
   const parts = id.split(':');
@@ -1136,17 +1175,25 @@ function setupEventListeners() {
 
   // Tap outside modal card (backdrop click) to save & close ratings screen
   // For dlgAyahDetail, sheet-content stops propagation so only true backdrop clicks close it
-  ['dlgAyahDetail', 'dlgHelp', 'dlgAuth', 'dlgAddLog', 'dlgSessionConfig'].forEach(dlgId => {
+  const dlgAyah = document.getElementById('dlgAyahDetail');
+  if (dlgAyah) {
+    dlgAyah.addEventListener('click', (e) => {
+      const rect = document.getElementById('ayahSheetContent')?.getBoundingClientRect();
+      if (rect) {
+        const isOutside = (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom);
+        if (isOutside) {
+          closeSurahDetail();
+        }
+      }
+    });
+  }
+
+  ['dlgHelp', 'dlgAuth', 'dlgAddLog', 'dlgSessionConfig'].forEach(dlgId => {
     const dlg = document.getElementById(dlgId);
     if (dlg) {
       dlg.addEventListener('click', (e) => {
         if (e.target === dlg) {
           saveState();
-          if (dlgId === 'dlgAyahDetail') {
-            renderHome();
-            renderQuran();
-            renderRevise();
-          }
           dlg.close();
         }
       });
@@ -1539,4 +1586,5 @@ window.loginWithGoogle = loginWithGoogle;
 window.loginWithEmail = loginWithEmail;
 window.signOutUser = signOutUser;
 window.clearAppCacheAndReload = clearAppCacheAndReload;
+window.closeSurahDetail = closeSurahDetail;
 
