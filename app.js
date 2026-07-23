@@ -60,7 +60,7 @@ let S = {
 // Async Dataset Loader
 export async function loadQuranDataset() {
   try {
-    const res = await fetch('./data/quran_63_114.json?v=1.3.4');
+    const res = await fetch('./data/quran_63_114.json?v=1.5.1');
     if (res.ok) {
       QURAN_DATA = await res.json();
       console.log("Quran Dataset (Surahs 63-114) loaded successfully with keys:", Object.keys(QURAN_DATA).length);
@@ -280,7 +280,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.5.0 (updated 2026-07-23 19:50)`;
+    verDiv.textContent = `v1.5.1 (updated 2026-07-23 20:00)`;
   }
 }
 
@@ -752,7 +752,7 @@ export function openSurahDetail(sNum, scrollToIndex = null) {
           <div id="ayah-card-${sNum}-${idx}" style="padding:14px 0;border-bottom:1px solid var(--line);scroll-margin-top:20px;">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <span style="font-size:0.75rem;font-weight:800;color:var(--gold);">Ayah ${idx + 1}</span>
-              <div style="display:flex;gap:6px;">
+              <div style="display:flex;gap:6px;" id="ayah-badges-${sNum}-${idx}">
                 <span class="lvl-badge ${aScale.class}">AR: ${aScale.icon} ${aScale.label}</span>
                 <span class="lvl-badge ${mScale.class}">EN: ${mScale.icon} ${mScale.label}</span>
               </div>
@@ -804,12 +804,25 @@ export function rateAyahAndNext(sNum, idx, level) {
   setAyahRating(id, 'a', level);
   setAyahRating(id, 'm', level);
   
+  // Update badges inline for smooth UI without re-rendering
+  const scale = RATING_SCALE.find(r => r.level === level) || RATING_SCALE[0];
+  const badgesContainer = document.getElementById(`ayah-badges-${sNum}-${idx}`);
+  if (badgesContainer) {
+    badgesContainer.innerHTML = `
+      <span class="lvl-badge ${scale.class}">AR: ${scale.icon} ${scale.label}</span>
+      <span class="lvl-badge ${scale.class}">EN: ${scale.icon} ${scale.label}</span>
+    `;
+  }
+  
   const nextIdx = idx + 1;
   const hasNext = nextIdx < surah.ayahs.length;
   
-  openSurahDetail(sNum, hasNext ? nextIdx : idx);
-  
-  if (!hasNext) {
+  if (hasNext) {
+    const nextCard = document.getElementById(`ayah-card-${sNum}-${nextIdx}`);
+    if (nextCard) {
+      nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  } else {
     toast("Masha'Allah! All ayahs in this Surah rated 🌟");
   }
 }
@@ -1065,8 +1078,7 @@ function setupEventListeners() {
     const dlg = document.getElementById(dlgId);
     if (dlg) {
       dlg.addEventListener('click', (e) => {
-        const inner = dlg.querySelector('.sheet-content, .modal-overlay, .ob-card');
-        if (inner && !inner.contains(e.target)) {
+        if (e.target === dlg) {
           saveState();
           renderHome();
           renderQuran();

@@ -1061,6 +1061,7 @@ dialog {
   width: 100%;
   margin: auto auto 0; /* Bottom alignment for mobile sheet style */
   outline: none;
+  color: var(--ink); /* Prevent CanvasText default */
 }
 
 dialog::backdrop {
