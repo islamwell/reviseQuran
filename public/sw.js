@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hifzflow-v1.5.1';
+const CACHE_NAME = 'hifzflow-v1.5.2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -40,10 +40,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Network-first strategy for instant app updates, fallback to cache if offline
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) return cachedResponse;
-      return fetch(event.request).then((networkResponse) => {
+    fetch(event.request)
+      .then((networkResponse) => {
         if (event.request.method === 'GET' && networkResponse.status === 200) {
           const responseClone = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -51,8 +51,10 @@ self.addEventListener('fetch', (event) => {
           });
         }
         return networkResponse;
-      });
-    })
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
 
