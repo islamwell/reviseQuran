@@ -159,8 +159,24 @@
       <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Settings &amp; Backup</h2>
       <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Configure revision cycle window, daily targets, backup JSON, or simulate days.</p>
     </div>
+
+    <div class="sett-card" style="margin-top:14px;border:1px solid var(--gold);background:rgba(211,156,67,0.08);">
+      <h3 style="color:var(--gold);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span>App Version &amp; Cache</span>
+        <span style="font-size:0.8rem;background:var(--gold);color:#000;padding:2px 8px;border-radius:12px;font-weight:800;" id="settingsVerBadge">v1.5.3</span>
+      </h3>
+      <div class="sett-row">
+        <div>
+          <label>Force Update &amp; Clear Cache</label>
+          <small>Purges local Service Worker cache and reloads the latest version from server.</small>
+        </div>
+        <button class="cta" id="btnClearCache" onclick="clearAppCacheAndReload()" style="width:auto;padding:8px 14px;font-size:0.78rem;background:var(--gold);color:#000;white-space:nowrap;">
+          <span>Clear Cache &amp; Reload 🔄</span>
+        </button>
+      </div>
+    </div>
     
-    <div class="sett-card">
+    <div class="sett-card" style="margin-top:16px;">
       <h3>Revision Preferences</h3>
       <div class="sett-row">
         <div>
@@ -274,7 +290,7 @@
       <a href="#" onclick="go('quran'); return false;">Quran</a>
       <a href="#" onclick="go('settings'); return false;">Settings</a>
     </div>
-    <div class="ver" id="appVersion">v1.5.2 (updated 2026-07-23 20:10)</div>
+    <div class="ver" id="appVersion">v1.5.3 (updated 2026-07-23 20:22)</div>
     <div>Built with patience for memorizers of the Holy Quran.</div>
   </footer>
 </div>

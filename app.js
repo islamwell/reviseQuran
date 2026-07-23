@@ -280,7 +280,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.5.2 (updated 2026-07-23 20:10)`;  
+    verDiv.textContent = `v1.5.3 (updated 2026-07-23 20:22)`;  
+  }
+  const settVerBadge = document.getElementById('settingsVerBadge');
+  if (settVerBadge) {
+    settVerBadge.textContent = `v1.5.3`;
   }
 }
 
@@ -1027,6 +1031,28 @@ function resetApplication() {
   }
 }
 
+export async function clearAppCacheAndReload() {
+  toast("Clearing cache & loading latest version... 🔄");
+  try {
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const reg of registrations) {
+        await reg.unregister();
+      }
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch (err) {
+    console.warn("Error purging SW cache", err);
+  }
+  setTimeout(() => {
+    window.location.href = window.location.origin + window.location.pathname + '?reload=' + Date.now();
+  }, 400);
+}
+window.clearAppCacheAndReload = clearAppCacheAndReload;
+
 /* ============ KEYBOARD SHORTCUTS & HELP SYSTEM ============ */
 export function handleKeyDown(e) {
   // Ignore inside text input elements
@@ -1230,6 +1256,9 @@ function setupEventListeners() {
   
   const btnReset = document.getElementById('btnReset');
   if (btnReset) btnReset.onclick = () => resetApplication();
+
+  const btnClearCache = document.getElementById('btnClearCache');
+  if (btnClearCache) btnClearCache.onclick = () => clearAppCacheAndReload();
   
   const btnAddLog = document.getElementById('btnAddLog');
   if (btnAddLog) {
@@ -1509,4 +1538,5 @@ window.openAuthModal = openAuthModal;
 window.loginWithGoogle = loginWithGoogle;
 window.loginWithEmail = loginWithEmail;
 window.signOutUser = signOutUser;
+window.clearAppCacheAndReload = clearAppCacheAndReload;
 
