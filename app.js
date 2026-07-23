@@ -15,6 +15,11 @@ export function cleanArName(name) {
   return name.replace(/^سُورَةُ\s*/g, '').replace(/^سورة\s*/g, '').trim();
 }
 
+export function removeArabicDiacritics(text) {
+  if (!text) return "";
+  return text.replace(/[\u064B-\u0653\u0670\u0654\u0655]/g, "").trim();
+}
+
 export function cleanEnName(name) {
   if (!name) return "";
   let s = name.replace(/^surah\s+/i, '').trim();
@@ -293,11 +298,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.5.4 (updated 2026-07-23 20:35)`;  
+    verDiv.textContent = `v1.5.5 (updated 2026-07-23 20:45)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.5.4`;
+    settVerBadge.textContent = `v1.5.5`;
   }
 }
 
@@ -433,13 +438,14 @@ function renderHome() {
       const isKnown = S.memorized[sNum];
       const enNameClean = cleanEnName(surah.name);
       const arNameClean = cleanArName(surah.ar);
+      const arNameNoVowels = removeArabicDiacritics(arNameClean);
       
       gridHtml += `
         <button class="hm-cell ${isKnown ? rollup.strengthClass : 'untouched'}" onclick="openSurahDetail(${sNum})">
-          <span style="font-size:1.1rem;font-weight:800;color:var(--gold);line-height:1.1;">${sNum}</span>
-          <b style="font-size:0.82rem;margin:3px 0 1px;line-height:1.2;color:var(--ink);">${enNameClean}</b>
-          <span style="font-size:0.95rem;line-height:1.2;font-family:var(--font-arabic);color:var(--ink2);">${arNameClean}</span>
-          <span style="font-size:0.6rem;opacity:0.8;margin-top:2px;">${rollup.memCount}/${rollup.total} ayahs</span>
+          <span class="hm-num">${sNum}</span>
+          <span class="hm-ar">${arNameNoVowels}</span>
+          <b class="hm-en">${enNameClean}</b>
+          <span class="hm-count">${rollup.memCount}/${rollup.total}</span>
           <span class="tip">
             <span class="row"><b>${enNameClean}</b> <span>${arNameClean}</span></span>
             <span class="row"><b>Status:</b> <span>${rollup.status}</span></span>

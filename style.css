@@ -944,17 +944,14 @@ header {
 }
 
 .hm-cell {
-  min-height: 84px;
-  padding: 8px 6px;
-  border-radius: 12px;
+  min-height: 106px;
+  padding: 12px 8px;
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   text-align: center;
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.95);
   border: 1px solid transparent;
   cursor: pointer;
   position: relative;
@@ -963,6 +960,53 @@ header {
   overflow: visible; /* Show tooltips correctly */
   --h: 120;
   --mh: 120;
+}
+
+.hm-cell .hm-num {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--gold);
+  line-height: 1;
+  margin-bottom: 5px;
+}
+
+.hm-cell .hm-ar {
+  font-size: 1.05rem;
+  line-height: 1.2;
+  font-family: var(--font-arabic);
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+
+.hm-cell .hm-en {
+  font-size: 0.8rem;
+  line-height: 1.2;
+  color: var(--ink2);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.hm-cell .hm-count {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--bg2);
+  color: var(--ink);
+  line-height: 1;
+}
+
+[data-theme="light"] .hm-cell .hm-count {
+  background: rgba(0, 0, 0, 0.08);
+  color: #1f2937 !important;
+}
+
+[data-theme="light"] .hm-cell .hm-ar {
+  color: #111827 !important;
+}
+
+[data-theme="light"] .hm-cell .hm-en {
+  color: #374151 !important;
 }
 
 .hm-cell:active {
