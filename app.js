@@ -280,7 +280,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.5.1 (updated 2026-07-23 20:00)`;
+    verDiv.textContent = `v1.5.2 (updated 2026-07-23 20:10)`;  
   }
 }
 
@@ -743,29 +743,42 @@ export function openSurahDetail(sNum, scrollToIndex = null) {
         const id = idOf(sNum, idx);
         const aSt = S.stats[id]?.a;
         const mSt = S.stats[id]?.m;
-        const aLvl = aSt?.lvl || strengthToRating(calculateStrength(id, 'a'));
-        const mLvl = mSt?.lvl || strengthToRating(calculateStrength(id, 'm'));
-        const aScale = RATING_SCALE.find(r => r.level === aLvl) || RATING_SCALE[0];
-        const mScale = RATING_SCALE.find(r => r.level === mLvl) || RATING_SCALE[0];
+        const aLvl = aSt?.lvl || (aSt ? strengthToRating(calculateStrength(id, 'a')) : null);
+        const mLvl = mSt?.lvl || (mSt ? strengthToRating(calculateStrength(id, 'm')) : null);
+        const aScale = aLvl ? (RATING_SCALE.find(r => r.level === aLvl) || RATING_SCALE[0]) : null;
+        const mScale = mLvl ? (RATING_SCALE.find(r => r.level === mLvl) || RATING_SCALE[0]) : null;
+        const arColor = aScale ? aScale.color : 'var(--ink)';
+        const enColor = mScale ? mScale.color : 'var(--ink2)';
+        const arBg = aScale ? `${aScale.color}12` : 'transparent';
+        const enBg = mScale ? `${mScale.color}10` : 'transparent';
+        const arBorder = aScale ? `2px solid ${aScale.color}55` : '2px solid transparent';
+        const enBorder = mScale ? `2px solid ${mScale.color}44` : '2px solid transparent';
         
         return `
           <div id="ayah-card-${sNum}-${idx}" style="padding:14px 0;border-bottom:1px solid var(--line);scroll-margin-top:20px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
               <span style="font-size:0.75rem;font-weight:800;color:var(--gold);">Ayah ${idx + 1}</span>
-              <div style="display:flex;gap:6px;" id="ayah-badges-${sNum}-${idx}">
-                <span class="lvl-badge ${aScale.class}">AR: ${aScale.icon} ${aScale.label}</span>
-                <span class="lvl-badge ${mScale.class}">EN: ${mScale.icon} ${mScale.label}</span>
+            </div>
+            <div id="ayah-ar-${sNum}-${idx}" class="ar-big" style="font-size:1.35rem;line-height:2;margin:0 0 6px;padding:10px 14px;border-radius:10px;background:${arBg};border:${arBorder};transition:background 0.3s,border 0.3s;">${ay.ar}</div>
+            <div id="ayah-en-${sNum}-${idx}" class="en-big" style="font-size:0.85rem;padding:8px 12px;border-radius:8px;background:${enBg};border:${enBorder};transition:background 0.3s,border 0.3s;">${ay.en}</div>
+            
+            <!-- 3 Color Quick Selector - Arabic -->
+            <div style="margin-top:12px;">
+              <small style="font-size:0.62rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:0.08em;">🕌 Arabic Recall</small>
+              <div style="display:flex;gap:6px;margin-top:5px;">
+                ${RATING_SCALE.map(r => `
+                  <button style="flex:1;padding:7px 8px;font-size:0.73rem;border-radius:8px;background:${r.color}18;border:1.5px solid ${r.color}44;color:${r.color};font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;" onclick="rateAyahTrack(${sNum}, ${idx}, 'a', ${r.level});event.stopPropagation();">
+                    <span>${r.icon}</span> <span>${r.label}</span>
+                  </button>
+                `).join('')}
               </div>
             </div>
-            <div class="ar-big" style="font-size:1.35rem;line-height:2;margin:8px 0;">${ay.ar}</div>
-            <div class="en-big" style="font-size:0.85rem;">${ay.en}</div>
-            
-            <!-- 3 Color Quick Selector -->
-            <div style="margin-top:10px;">
-              <small style="font-size:0.65rem;font-weight:800;color:var(--ink3);text-transform:uppercase;">Set Memorization Rating</small>
-              <div style="display:flex;gap:6px;margin-top:4px;">
+            <!-- 3 Color Quick Selector - Meaning -->
+            <div style="margin-top:8px;">
+              <small style="font-size:0.62rem;font-weight:800;color:var(--ink3);text-transform:uppercase;letter-spacing:0.08em;">📖 Meaning / Translation</small>
+              <div style="display:flex;gap:6px;margin-top:5px;">
                 ${RATING_SCALE.map(r => `
-                  <button style="flex:1;padding:8px 10px;font-size:0.75rem;border-radius:8px;background:${r.color}18;border:1px solid ${r.color}44;color:${r.color};font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;" onclick="rateAyahAndNext(${sNum}, ${idx}, ${r.level})">
+                  <button style="flex:1;padding:7px 8px;font-size:0.73rem;border-radius:8px;background:${r.color}18;border:1.5px solid ${r.color}44;color:${r.color};font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;" onclick="rateAyahTrack(${sNum}, ${idx}, 'm', ${r.level});event.stopPropagation();">
                     <span>${r.icon}</span> <span>${r.label}</span>
                   </button>
                 `).join('')}
@@ -786,45 +799,67 @@ export function openSurahDetail(sNum, scrollToIndex = null) {
   const dlg = document.getElementById('dlgAyahDetail');
   if (dlg && !dlg.open) dlg.showModal();
 
+  // Stop click events inside sheet-content from bubbling to the dialog backdrop handler
+  const sheetContent = document.getElementById('ayahSheetContent');
+  if (sheetContent) {
+    sheetContent.onclick = (e) => e.stopPropagation();
+  }
+
   if (scrollToIndex !== null) {
     setTimeout(() => {
       const targetCard = document.getElementById(`ayah-card-${sNum}-${scrollToIndex}`);
-      if (targetCard) {
-        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (targetCard && sheetContent) {
+        const cardTop = targetCard.offsetTop;
+        sheetContent.scrollTo({ top: cardTop - 60, behavior: 'smooth' });
       }
-    }, 50);
+    }, 100);
   }
 }
 
-export function rateAyahAndNext(sNum, idx, level) {
+export function rateAyahTrack(sNum, idx, track, level) {
   const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
   if (!surah) return;
   
   const id = idOf(sNum, idx);
-  setAyahRating(id, 'a', level);
-  setAyahRating(id, 'm', level);
+  setAyahRating(id, track, level);
   
-  // Update badges inline for smooth UI without re-rendering
+  // Update the corresponding text highlight color
   const scale = RATING_SCALE.find(r => r.level === level) || RATING_SCALE[0];
-  const badgesContainer = document.getElementById(`ayah-badges-${sNum}-${idx}`);
-  if (badgesContainer) {
-    badgesContainer.innerHTML = `
-      <span class="lvl-badge ${scale.class}">AR: ${scale.icon} ${scale.label}</span>
-      <span class="lvl-badge ${scale.class}">EN: ${scale.icon} ${scale.label}</span>
-    `;
+  if (track === 'a') {
+    const arEl = document.getElementById(`ayah-ar-${sNum}-${idx}`);
+    if (arEl) {
+      arEl.style.background = `${scale.color}12`;
+      arEl.style.border = `2px solid ${scale.color}55`;
+    }
+  } else {
+    const enEl = document.getElementById(`ayah-en-${sNum}-${idx}`);
+    if (enEl) {
+      enEl.style.background = `${scale.color}10`;
+      enEl.style.border = `2px solid ${scale.color}44`;
+    }
   }
   
+  // After rating, scroll to the next ayah within the sheet-content
   const nextIdx = idx + 1;
   const hasNext = nextIdx < surah.ayahs.length;
   
   if (hasNext) {
     const nextCard = document.getElementById(`ayah-card-${sNum}-${nextIdx}`);
-    if (nextCard) {
-      nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const sheetContent = document.getElementById('ayahSheetContent');
+    if (nextCard && sheetContent) {
+      const cardTop = nextCard.offsetTop;
+      sheetContent.scrollTo({ top: cardTop - 60, behavior: 'smooth' });
     }
   } else {
     toast("Masha'Allah! All ayahs in this Surah rated 🌟");
   }
+}
+window.rateAyahTrack = rateAyahTrack;
+
+// Legacy alias kept for any remaining references
+export function rateAyahAndNext(sNum, idx, level) {
+  rateAyahTrack(sNum, idx, 'a', level);
+  rateAyahTrack(sNum, idx, 'm', level);
 }
 window.rateAyahAndNext = rateAyahAndNext;
 
@@ -1074,15 +1109,18 @@ function setupEventListeners() {
   document.addEventListener('keydown', handleKeyDown);
 
   // Tap outside modal card (backdrop click) to save & close ratings screen
+  // For dlgAyahDetail, sheet-content stops propagation so only true backdrop clicks close it
   ['dlgAyahDetail', 'dlgHelp', 'dlgAuth', 'dlgAddLog', 'dlgSessionConfig'].forEach(dlgId => {
     const dlg = document.getElementById(dlgId);
     if (dlg) {
       dlg.addEventListener('click', (e) => {
         if (e.target === dlg) {
           saveState();
-          renderHome();
-          renderQuran();
-          renderRevise();
+          if (dlgId === 'dlgAyahDetail') {
+            renderHome();
+            renderQuran();
+            renderRevise();
+          }
           dlg.close();
         }
       });
