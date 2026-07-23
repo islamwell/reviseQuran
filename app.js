@@ -35,16 +35,16 @@ export function buildProportionalGradient(weakCount, medCount, strongCount, isDa
 
   // Color definitions (dark mode / light mode)
   const colors = isDark ? {
-    weak:   { r: 224, g: 86,  b: 86  },
-    medium: { r: 234, g: 179, b: 8   },
-    strong: { r: 22,  g: 163, b: 120 }
+    weak:   { r: 255, g: 60,  b: 60  },
+    medium: { r: 255, g: 255, b: 0   },
+    strong: { r: 0,   g: 200, b: 0   }
   } : {
-    weak:   { r: 224, g: 86,  b: 86  },
-    medium: { r: 234, g: 179, b: 8   },
-    strong: { r: 22,  g: 163, b: 120 }
+    weak:   { r: 255, g: 60,  b: 60  },
+    medium: { r: 255, g: 255, b: 0   },
+    strong: { r: 0,   g: 200, b: 0   }
   };
 
-  const opacity = isDark ? 0.42 : 0.22;
+  const opacity = isDark ? 0.45 : 0.25;
 
   // Build gradient stops for smooth blending
   const activeStops = [];
@@ -78,7 +78,7 @@ export function buildProportionalGradient(weakCount, medCount, strongCount, isDa
     stops.push(`${activeStops[activeStops.length - 1].color} 100%`);
   }
 
-  const background = `linear-gradient(to right, ${stops.join(', ')})`;
+  const background = `linear-gradient(to bottom, ${stops.join(', ')})`;
 
   // Border & shadow: blend the dominant color with proportional weighting
   const blendR = Math.round((weakCount * colors.weak.r + medCount * colors.medium.r + strongCount * colors.strong.r) / total);
@@ -252,11 +252,11 @@ export function getCombinedStrength(id) {
   const a = calculateStrength(id, 'a');
   const m = calculateStrength(id, 'm');
   if (a === null && m === null) {
-    if (isSurahMemorized(sNum)) return 95;
+    if (isSurahMemorized(sNum)) return 100;
     return null;
   }
-  const aVal = a ?? 95;
-  const mVal = m ?? 95;
+  const aVal = a ?? 100;
+  const mVal = m ?? 100;
   return Math.round((aVal + mVal) / 2);
 }
 
@@ -320,20 +320,20 @@ export function getSurahRollup(sNum) {
   
   surah.ayahs.forEach((_, idx) => {
     const id = idOf(sNum, idx);
-    const comb = getCombinedStrength(id);
-    if (comb !== null) {
+    const arStr = calculateStrength(id, 'a');
+    if (arStr !== null) {
       memCount++;
-      totalStrengthSum += comb;
+      totalStrengthSum += arStr;
       testedCount++;
-      if (comb >= 70) strongCount++;
-      else if (comb >= 40) medCount++;
+      if (arStr >= 70) strongCount++;
+      else if (arStr >= 40) medCount++;
       else weakCount++;
     }
   });
   
   const isKnown = isSurahMemorized(sNum);
   const status = !isKnown && memCount === 0 ? "Not Started" : (memCount === total || isKnown ? "Complete" : "Partial");
-  const avgStr = testedCount ? Math.round(totalStrengthSum / testedCount) : (isKnown ? 95 : 0);
+  const avgStr = testedCount ? Math.round(totalStrengthSum / testedCount) : (isKnown ? 100 : 0);
   const pct = isKnown ? 100 : Math.round((memCount / total) * 100);
   
   // If surah is memorized but no individual ayah stats, treat all as strong
@@ -380,11 +380,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.5.8 (updated 2026-07-23 20:45)`;  
+    verDiv.textContent = `v1.5.9 (updated 2026-07-23 21:30)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.5.8`;
+    settVerBadge.textContent = `v1.5.9`;
   }
 }
 
@@ -543,8 +543,6 @@ function renderHome() {
           <b class="hm-en">${enNameClean}</b>
           <span class="hm-count">${rollup.memCount}/${rollup.total}</span>
           <span class="tip">
-            <span class="row"><b>${enNameClean}</b> <span>${arNameClean}</span></span>
-            <span class="row"><b>Status:</b> <span>${rollup.status}</span></span>
             <span class="row"><b>Avg Strength:</b> <span>${rollup.avgStr}%</span></span>
             <span class="row"><b>🔴 Weak:</b> <span>${rollup.weakCount}</span></span>
             <span class="row"><b>🟡 Medium:</b> <span>${rollup.medCount}</span></span>
