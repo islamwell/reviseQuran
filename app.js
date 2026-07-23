@@ -46,30 +46,39 @@ export function buildProportionalGradient(weakCount, medCount, strongCount, isDa
 
   const opacity = isDark ? 0.42 : 0.22;
 
-  // Build gradient stops
-  const stops = [];
+  // Build gradient stops for smooth blending
+  const activeStops = [];
   let pos = 0;
 
   if (wPct > 0) {
     const c = colors.weak;
-    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
+    const center = pos + wPct / 2;
+    activeStops.push({ color: `rgba(${c.r},${c.g},${c.b},${opacity})`, pct: center });
     pos += wPct;
-    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
   }
   if (mPct > 0) {
     const c = colors.medium;
-    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
+    const center = pos + mPct / 2;
+    activeStops.push({ color: `rgba(${c.r},${c.g},${c.b},${opacity})`, pct: center });
     pos += mPct;
-    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
   }
   if (sPct > 0) {
     const c = colors.strong;
-    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
+    const center = pos + sPct / 2;
+    activeStops.push({ color: `rgba(${c.r},${c.g},${c.b},${opacity})`, pct: center });
     pos += sPct;
-    stops.push(`rgba(${c.r},${c.g},${c.b},${opacity}) ${pos}%`);
   }
 
-  const background = `linear-gradient(135deg, ${stops.join(', ')})`;
+  const stops = [];
+  if (activeStops.length > 0) {
+    stops.push(`${activeStops[0].color} 0%`);
+    for (const stop of activeStops) {
+      stops.push(`${stop.color} ${stop.pct}%`);
+    }
+    stops.push(`${activeStops[activeStops.length - 1].color} 100%`);
+  }
+
+  const background = `linear-gradient(to right, ${stops.join(', ')})`;
 
   // Border & shadow: blend the dominant color with proportional weighting
   const blendR = Math.round((weakCount * colors.weak.r + medCount * colors.medium.r + strongCount * colors.strong.r) / total);
@@ -371,11 +380,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.5.7 (updated 2026-07-23 20:45)`;  
+    verDiv.textContent = `v1.5.8 (updated 2026-07-23 20:45)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.5.7`;
+    settVerBadge.textContent = `v1.5.8`;
   }
 }
 
@@ -517,7 +526,7 @@ function renderHome() {
       let inlineStyle = '';
       let cellClass = 'hm-cell';
       
-      if (isKnown) {
+      if (isKnown || rollup.memCount > 0) {
         const grad = buildProportionalGradient(rollup.weakCount, rollup.medCount, rollup.strongCount, isDark);
         if (grad) {
           inlineStyle = `background:${grad.background};border:${grad.border};box-shadow:${grad.shadow};`;

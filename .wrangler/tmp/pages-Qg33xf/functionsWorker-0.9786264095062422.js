@@ -121,7 +121,7 @@ async function onRequestPost2(context) {
 }
 __name(onRequestPost2, "onRequestPost");
 
-// ../.wrangler/tmp/pages-MUZ94i/functionsRoutes-0.9452400554917582.mjs
+// ../.wrangler/tmp/pages-Qg33xf/functionsRoutes-0.6195224605154293.mjs
 var routes = [
   {
     routePath: "/api/auth",
