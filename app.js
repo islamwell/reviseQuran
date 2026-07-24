@@ -380,7 +380,7 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.6.0 (updated 2026-07-24 17:40)`;  
+    verDiv.textContent = `v1.6.1 (updated 2026-07-24 17:55)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
@@ -1075,13 +1075,14 @@ function renderPracticeCard() {
     pBody.innerHTML = `
       <span class="phase-chip recite">① Recite from Memory</span>
       <div class="p-card">
-        <span class="p-ref">${ayah.s.name} · Ayah ${ayah.ai + 1}</span>
+        <span class="p-ref">${cleanEnName(ayah.s.name)} ${ayah.s.n}:${ayah.ai + 1}</span>
         <p class="p-prompt">Recite aloud from memory — then tap to check.</p>
-        <div class="hidden-text" id="hidTextReveal">
-          <span class="tap"><span class="eye">◉</span>Tap to reveal Arabic</span>
+        <div class="hidden-text revealed" id="hidTextReveal" style="min-height: 80px; display: flex; flex-direction: column; gap: 10px; justify-content: center;">
+          <span class="reveal-ar" id="prArabic" style="min-height: 40px; display: block;"></span>
+          <span class="hm-en" id="prTrans" style="opacity:0; transition: opacity 0.5s; font-size: 0.95rem; color: var(--ink2);"></span>
         </div>
       </div>
-      <div class="grade-row" id="practiceGradeRow" style="opacity:0.35;pointer-events:none">
+      <div class="grade-row" id="practiceGradeRow">
         ${RATING_SCALE.map((r, i) => `
           <button class="grade g${i + 1}" onclick="gradePractice(${r.level})">
             ${r.icon} ${r.label}
@@ -1093,19 +1094,33 @@ function renderPracticeCard() {
       </button>
     `;
     
-    const revealTrigger = document.getElementById('hidTextReveal');
-    const gradeRow = document.getElementById('practiceGradeRow');
+    const arEl = document.getElementById('prArabic');
+    const trEl = document.getElementById('prTrans');
+    const fullText = ayah.ar;
+    trEl.textContent = ayah.en;
     
-    if (revealTrigger) {
-      revealTrigger.onclick = () => {
-        revealTrigger.classList.add('revealed');
-        revealTrigger.innerHTML = `<span class="reveal-ar">${ayah.ar}</span>`;
-        if (gradeRow) {
-          gradeRow.style.opacity = '1';
-          gradeRow.style.pointerEvents = 'auto';
-        }
-      };
+    const typeSpeed = Math.max(30, Math.min(80, 3000 / (fullText.length || 1))); 
+    let charIdx = 0;
+    
+    function typeWriter() {
+      const currentAyah = practiceQueue[practiceIndex];
+      if (!currentAyah || currentAyah.id !== ayah.id) return;
+      
+      if (charIdx <= fullText.length) {
+        arEl.textContent = fullText.substring(0, charIdx);
+        charIdx++;
+        setTimeout(typeWriter, typeSpeed);
+      } else {
+        setTimeout(() => {
+          const checkAyah = practiceQueue[practiceIndex];
+          if (checkAyah && checkAyah.id === ayah.id && trEl) {
+             trEl.style.opacity = '1';
+          }
+        }, 1000);
+      }
     }
+    
+    typeWriter();
   }
 }
 
