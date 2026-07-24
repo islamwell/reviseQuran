@@ -7,7 +7,7 @@
 export const RATING_SCALE = [
   { level: 1, label: "Weak", icon: "🔴", pct: 30, iv: 1, class: "lvl-weak", color: "#e05656" },
   { level: 2, label: "Medium", icon: "🟡", pct: 65, iv: 4, class: "lvl-medium", color: "#eab308" },
-  { level: 3, label: "Strong", icon: "🟢", pct: 95, iv: 14, class: "lvl-strong", color: "#167566" }
+  { level: 3, label: "Strong", icon: "🟢", pct: 100, iv: 14, class: "lvl-strong", color: "#167566" }
 ];
 
 export function cleanArName(name) {
@@ -321,28 +321,39 @@ export function getSurahRollup(sNum) {
   
   const total = surah.ayahs.length;
   let memCount = 0;
-  let totalStrengthSum = 0;
+  let sumCorrectWords = 0;
+  let sumAyahWordCount = 0;
   let testedCount = 0;
   let weakCount = 0;
   let medCount = 0;
   let strongCount = 0;
   
-  surah.ayahs.forEach((_, idx) => {
+  surah.ayahs.forEach((ay, idx) => {
     const id = idOf(sNum, idx);
+    const st = S.stats[id]?.a;
     const arStr = calculateStrength(id, 'a');
-    if (arStr !== null) {
+    
+    if (arStr !== null || (st && st.lvl)) {
       memCount++;
-      totalStrengthSum += arStr;
       testedCount++;
-      if (arStr >= 70) strongCount++;
-      else if (arStr >= 40) medCount++;
+      
+      const lvl = st?.lvl || (arStr >= 70 ? 3 : (arStr >= 40 ? 2 : 1));
+      const ayahWordCount = ay.ar ? ay.ar.trim().split(/\s+/).filter(Boolean).length : 1;
+      const mistakes = lvl === 3 ? 0 : (lvl === 2 ? 1 : 2);
+      const correctWords = Math.max(0, ayahWordCount - mistakes);
+      
+      sumCorrectWords += correctWords;
+      sumAyahWordCount += ayahWordCount;
+      
+      if (lvl === 3) strongCount++;
+      else if (lvl === 2) medCount++;
       else weakCount++;
     }
   });
   
   const isKnown = isSurahMemorized(sNum);
   const status = !isKnown && memCount === 0 ? "Not Started" : (memCount === total || isKnown ? "Complete" : "Partial");
-  const avgStr = testedCount ? Math.round(totalStrengthSum / testedCount) : (isKnown ? 100 : 0);
+  const avgStr = sumAyahWordCount > 0 ? Math.round((sumCorrectWords / sumAyahWordCount) * 100) : (isKnown ? 100 : 0);
   const pct = isKnown ? 100 : Math.round((memCount / total) * 100);
   
   // If surah is memorized but no individual ayah stats, treat all as strong
@@ -389,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.6.3 (updated 2026-07-24 18:50)`;  
+    verDiv.textContent = `v1.6.4 (updated 2026-07-24 19:12)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.6.3`;
+    settVerBadge.textContent = `v1.6.4`;
   }
 }
 
