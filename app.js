@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.6.9 (updated 2026-07-24 19:39)`;  
+    verDiv.textContent = `v1.7.0 (updated 2026-07-24 19:42)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.6.9`;
+    settVerBadge.textContent = `v1.7.0`;
   }
 }
 
@@ -670,7 +670,7 @@ function renderRevise() {
             <span class="gh-ar">${cleanArName(surahAr)}</span>
             <div class="gh-info">
               <b class="gh-title">${cleanEnName(surahName)}</b>
-              <span class="gh-sub">${grp.items.length} ${grp.items.length === 1 ? 'verse' : 'verses'} · Tap name to revise ⚡</span>
+              <span class="gh-sub">${grp.items.length}/${grp.surah.ayahs.length} · Tap name to revise ⚡</span>
             </div>
           </div>
           <div class="gh-right" onclick="toggleReviseGroup(${sNum}); event.stopPropagation();" title="Tap triangle to expand/collapse">
