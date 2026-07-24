@@ -111,7 +111,7 @@ export function strengthToRating(pct, assignedLvl = null) {
     if (assignedLvl >= 4) return 2; // Legacy 9-point medium -> Lvl 2 (Medium 🟡)
     if (assignedLvl >= 1) return 1; // Legacy 9-point weak -> Lvl 1 (Weak 🔴)
   }
-  if (pct === null) return 1;
+  if (pct === null) return 3;
   if (pct < 50) return 1;
   if (pct < 80) return 2;
   return 3;
@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.7.4 (updated 2026-07-24 20:23)`;  
+    verDiv.textContent = `v1.7.5 (updated 2026-07-24 20:25)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.7.4`;
+    settVerBadge.textContent = `v1.7.5`;
   }
 }
 
@@ -1012,11 +1012,12 @@ function renderInsights() {
   const coveragePct = totalScope ? Math.round((memorized.length / totalScope) * 100) : 0;
   
   // Rating breakdown distribution
-  const dist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0 };
+  const dist = { 1: 0, 2: 0, 3: 0 };
   memorized.forEach(ayah => {
+    const st = S.stats[ayah.id]?.a || S.stats[ayah.id]?.m;
     const comb = getCombinedStrength(ayah.id);
-    const r = strengthToRating(comb);
-    dist[r]++;
+    const r = strengthToRating(comb, st?.lvl);
+    dist[r] = (dist[r] || 0) + 1;
   });
   
   container.innerHTML = `
