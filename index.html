@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#070d0b">
   <title>HifzFlow — Guard Your Memorization</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Lateef:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Scheherazade+New:wght@400;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="./style.css">
 </head>
@@ -196,6 +196,18 @@
           <option value="30">30 Checks</option>
         </select>
       </div>
+      <div class="sett-row">
+        <div>
+          <label>Quranic Arabic Font (Tanzil.net)</label>
+          <small>Choose your preferred Quran font typography.</small>
+        </div>
+        <select id="fontSelect" style="background:var(--bg2);border:1px solid var(--line);color:var(--ink);padding:6px;border-radius:6px;font-weight:700">
+          <option value="'Scheherazade New', serif" selected>Scheherazade New (Tanzil Naskh)</option>
+          <option value="'Amiri', serif">Amiri (Classic Naskh)</option>
+          <option value="'Noto Naskh Arabic', serif">Noto Naskh Arabic</option>
+          <option value="'Lateef', serif">Lateef (Regional Naskh)</option>
+        </select>
+      </div>
     </div>
 
     <div class="sett-card" style="margin-top:16px;">
@@ -284,7 +296,7 @@
       <a href="#" onclick="go('quran'); return false;">Quran</a>
       <a href="#" onclick="go('settings'); return false;">Settings</a>
     </div>
-    <div class="ver" id="appVersion">v1.6.2 (updated 2026-07-24 18:09)</div>
+    <div class="ver" id="appVersion">v1.6.3 (updated 2026-07-24 18:50)</div>
     <div>Built with patience for memorizers of the Holy Quran.</div>
   </footer>
 </div>

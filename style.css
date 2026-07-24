@@ -613,7 +613,9 @@ header {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 210px;
+  width: 100%;
+  max-width: 100%;
+  display: block;
   color: var(--ink);
 }
 
@@ -1523,19 +1525,30 @@ dialog[open] .modal-overlay {
 }
 
 .p-ref {
-  font-size: 0.72rem;
+  font-size: 2.16rem;
   font-weight: 800;
-  letter-spacing: 0.14em;
-  color: var(--ink3);
-  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  line-height: 1.3;
+}
+
+.p-ref .p-ref-ar {
+  font-family: var(--font-arabic);
+  color: var(--gold);
 }
 
 .p-prompt {
-  font-size: 0.95rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  color: var(--ink2);
-  margin-top: 14px;
-  line-height: 1.6;
+  color: var(--ink3);
+  margin-top: 6px;
+  line-height: 1.4;
+  opacity: 0.75;
 }
 
 .hidden-text {

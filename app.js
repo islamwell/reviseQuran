@@ -161,6 +161,12 @@ export async function loadQuranDataset() {
   }
 }
 
+export function applyArabicFont(fontFamily) {
+  if (fontFamily) {
+    document.documentElement.style.setProperty('--font-arabic', fontFamily);
+  }
+}
+
 // Load state from localStorage
 function loadState() {
   try {
@@ -171,9 +177,12 @@ function loadState() {
       if (!S.today) S.today = { day: "", done: 0 };
       if (!S.dailyGoal) S.dailyGoal = 10;
       if (!S.cycleDays) S.cycleDays = 30;
+      if (!S.arabicFont) S.arabicFont = "'Scheherazade New', serif";
       if (!S.logs) S.logs = [];
       if (!S.reminders) S.reminders = { enabled: false, time: "08:00", lastFired: null };
     }
+    if (!S.arabicFont) S.arabicFont = "'Scheherazade New', serif";
+    applyArabicFont(S.arabicFont);
   } catch (e) {
     console.error("Failed to load local storage state", e);
   }
@@ -380,11 +389,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.6.2 (updated 2026-07-24 18:09)`;  
+    verDiv.textContent = `v1.6.3 (updated 2026-07-24 18:50)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.6.2`;
+    settVerBadge.textContent = `v1.6.3`;
   }
 }
 
@@ -597,8 +606,8 @@ function renderRevise() {
       return `
         <div class="due-item" onclick="openAyahSheet('${item.id}')">
           <span class="strength-dot" style="background:${col}1c;color:${col}">${item.combined}%</span>
-          <span style="min-width:0">
-            <span class="ref">${item.s.name} · Ayah ${item.ai + 1}</span>
+          <span style="flex:1;min-width:0;">
+            <span class="ref">${cleanEnName(item.s.name)} · ${item.ai + 1}</span>
             <span class="ar-line">${item.ar}</span>
           </span>
           <span class="why">
@@ -766,11 +775,13 @@ function renderSettings() {
   
   const goalSelect = document.getElementById('goalSelect');
   const cycleSelect = document.getElementById('cycleSelect');
+  const fontSelect = document.getElementById('fontSelect');
   const remindersToggle = document.getElementById('remindersToggle');
   const reminderTimeInput = document.getElementById('reminderTimeInput');
   
   if (goalSelect) goalSelect.value = S.dailyGoal || 10;
   if (cycleSelect) cycleSelect.value = S.cycleDays || 30;
+  if (fontSelect) fontSelect.value = S.arabicFont || "'Scheherazade New', serif";
   if (remindersToggle) remindersToggle.checked = !!S.reminders?.enabled;
   if (reminderTimeInput) reminderTimeInput.value = S.reminders?.time || "08:00";
 }
@@ -1072,14 +1083,19 @@ function renderPracticeCard() {
   if (pCount) pCount.textContent = `${practiceIndex + 1}/${total}`;
   
   if (pBody) {
+    if (pBody._revealTimer) clearTimeout(pBody._revealTimer);
+    
     pBody.innerHTML = `
       <span class="phase-chip recite">① Recite from Memory</span>
       <div class="p-card">
-        <span class="p-ref">${cleanEnName(ayah.s.name)} ${ayah.s.n}:${ayah.ai + 1}</span>
+        <span class="p-ref">
+          <span class="p-ref-ar">${cleanArName(ayah.s.ar)}</span>
+          <span>${cleanEnName(ayah.s.name)} ${ayah.s.n}:${ayah.ai + 1}</span>
+        </span>
         <p class="p-prompt">Recite aloud from memory — then wait or grade yourself.</p>
         <div class="hidden-text revealed" id="hidTextReveal" style="min-height: 80px; display: flex; flex-direction: column; gap: 10px; justify-content: center;">
           <span class="hm-en" id="prTrans" style="font-size: 0.95rem; color: var(--ink2);">${ayah.en}</span>
-          <span class="reveal-ar" id="prArabic" style="min-height: 40px; display: block; opacity: 0; transition: opacity 0.5s;">${ayah.ar}</span>
+          <span class="reveal-ar" id="prArabic" style="min-height: 40px; display: block;"></span>
         </div>
       </div>
       <div class="grade-row" id="practiceGradeRow">
@@ -1097,17 +1113,27 @@ function renderPracticeCard() {
     const arEl = document.getElementById('prArabic');
     const fullText = ayah.ar;
     
-    // Dynamic delay: 1s min, 2.5 min (150,000ms) max for longest ayah (1194 chars)
+    // Cut delay by 70% (30% of original): 300ms min, 45,000ms max for longest ayah (1194 chars)
     const maxChars = 1194;
     const fraction = Math.min(1, (fullText.length || 1) / maxChars);
-    const delay = 1000 + fraction * (150000 - 1000);
+    const initialDelay = 300 + fraction * (45000 - 300);
     
-    pBody._revealTimer = setTimeout(() => {
+    // Typewriter animation: displaying letters a little slower (approx 65ms per char)
+    const typeSpeed = Math.max(65, Math.min(110, 4500 / (fullText.length || 1)));
+    let charIdx = 0;
+    
+    function startTyping() {
       const currentAyah = practiceQueue[practiceIndex];
-      if (currentAyah && currentAyah.id === ayah.id && arEl) {
-         arEl.style.opacity = '1';
+      if (!currentAyah || currentAyah.id !== ayah.id || !arEl) return;
+      
+      if (charIdx <= fullText.length) {
+        arEl.textContent = fullText.substring(0, charIdx);
+        charIdx++;
+        pBody._revealTimer = setTimeout(startTyping, typeSpeed);
       }
-    }, delay);
+    }
+    
+    pBody._revealTimer = setTimeout(startTyping, initialDelay);
   }
 }
 
@@ -1396,6 +1422,16 @@ function setupEventListeners() {
       saveState();
       renderHome();
       toast(`Daily goal set to ${S.dailyGoal} reviews`);
+    };
+  }
+  
+  const fontSelect = document.getElementById('fontSelect');
+  if (fontSelect) {
+    fontSelect.onchange = (e) => {
+      S.arabicFont = e.target.value;
+      saveState();
+      applyArabicFont(S.arabicFont);
+      toast("Quranic font updated");
     };
   }
   
