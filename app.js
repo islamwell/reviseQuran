@@ -380,11 +380,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.5.9 (updated 2026-07-23 21:30)`;  
+    verDiv.textContent = `v1.6.0 (updated 2026-07-24 17:40)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.5.9`;
+    settVerBadge.textContent = `v1.6.0`;
   }
 }
 
@@ -422,7 +422,6 @@ export function go(viewId) {
   if (viewId === 'revise') renderRevise();
   if (viewId === 'quran') renderQuran();
   if (viewId === 'history') renderHistory();
-  if (viewId === 'insights') renderInsights();
   if (viewId === 'settings') renderSettings();
   
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -763,6 +762,8 @@ function renderInsights() {
 
 /* ============ 6. RENDER SETTINGS VIEW ============ */
 function renderSettings() {
+  renderInsights();
+  
   const goalSelect = document.getElementById('goalSelect');
   const cycleSelect = document.getElementById('cycleSelect');
   const remindersToggle = document.getElementById('remindersToggle');
@@ -1270,8 +1271,7 @@ export function handleKeyDown(e) {
   else if (e.key === '2' || e.key === 'r' || e.key === 'R') { go('revise'); }
   else if (e.key === '3' || e.key === 'q' || e.key === 'Q') { go('quran'); }
   else if (e.key === '4' || e.key === 'l' || e.key === 'L') { go('history'); }
-  else if (e.key === '5' || e.key === 'i' || e.key === 'I') { go('insights'); }
-  else if (e.key === '6' || e.key === 's' || e.key === 'S') { go('settings'); }
+  else if (e.key === '5' || e.key === 's' || e.key === 'S') { go('settings'); }
 }
 
 /* ============ EVENT LISTENERS & BOOTSTRAP ============ */

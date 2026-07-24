@@ -54,7 +54,7 @@
       <!-- Quick Stats -->
       <div class="stat-row">
         <div class="stat" onclick="toast('Daily review streak')"><b class="fire" id="stStreak">0 🔥</b><span>Day Streak</span></div>
-        <div class="stat" onclick="go('insights')"><b class="strong" id="stStrong">0%</b><span>Coverage</span></div>
+        <div class="stat" onclick="go('settings')"><b class="strong" id="stStrong">0%</b><span>Coverage</span></div>
         <div class="stat" onclick="go('revise')"><b id="stWeak" style="color:var(--danger)">0</b><span>Weak Ayahs</span></div>
       </div>
 
@@ -144,21 +144,15 @@
     <div id="historyLogList" style="margin-top:18px;"></div>
   </section>
 
-  <!-- 5. INSIGHTS VIEW (Analytics) -->
-  <section class="view pad" id="v-insights">
-    <div style="margin-top:10px">
-      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Memorization Analytics</h2>
-      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Visual insights into your memorization coverage, rating distribution, and weakness trends.</p>
-    </div>
-    <div id="insightsContent"></div>
-  </section>
-
-  <!-- 6. SETTINGS VIEW -->
+  <!-- 5. SETTINGS VIEW -->
   <section class="view pad" id="v-settings">
     <div style="margin-top:10px">
-      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Settings &amp; Backup</h2>
-      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Configure revision cycle window, daily targets, backup JSON, or simulate days.</p>
+      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Settings &amp; Analytics</h2>
+      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">View memorization insights, configure revision parameters, and manage app preferences.</p>
     </div>
+
+    <!-- Memorization Analytics (Insights) -->
+    <div id="insightsContent" style="margin-top:14px;"></div>
 
     <div class="sett-card" style="margin-top:14px;border:1px solid var(--gold);background:rgba(211,156,67,0.08);">
       <h3 style="color:var(--gold);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -290,7 +284,7 @@
       <a href="#" onclick="go('quran'); return false;">Quran</a>
       <a href="#" onclick="go('settings'); return false;">Settings</a>
     </div>
-    <div class="ver" id="appVersion">v1.5.9 (updated 2026-07-23 21:30)</div>
+    <div class="ver" id="appVersion">v1.6.0 (updated 2026-07-24 17:40)</div>
     <div>Built with patience for memorizers of the Holy Quran.</div>
   </footer>
 </div>
@@ -497,7 +491,6 @@
   <button class="nav-btn" data-v="revise"><span class="ic">⚡</span>Revise</button>
   <button class="nav-btn" data-v="quran"><span class="ic">▤</span>Quran</button>
   <button class="nav-btn" data-v="history"><span class="ic">📖</span>Log</button>
-  <button class="nav-btn" data-v="insights"><span class="ic">📊</span>Insights</button>
   <button class="nav-btn" data-v="settings"><span class="ic">⚙</span>Settings</button>
 </nav>
 
