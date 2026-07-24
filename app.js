@@ -308,7 +308,7 @@ export function getFlatAyahs() {
 }
 
 export function getMemorizedAyahs() {
-  return getFlatAyahs().filter(x => isSurahMemorized(x.s.n));
+  return getFlatAyahs().filter(x => isSurahMemorized(x.s.n) || S.stats[x.id]?.a || S.stats[x.id]?.m);
 }
 
 export function isSurahMemorized(sNum) {
@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.7.3 (updated 2026-07-24 20:17)`;  
+    verDiv.textContent = `v1.7.4 (updated 2026-07-24 20:23)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.7.3`;
+    settVerBadge.textContent = `v1.7.4`;
   }
 }
 
@@ -623,8 +623,12 @@ function renderRevise() {
     grp.items.sort((a, b) => a.combined - b.combined);
     const avgGrpStr = Math.round(grp.items.reduce((acc, curr) => acc + curr.combined, 0) / grp.items.length);
     grp.avgGrpStr = avgGrpStr;
-    // Do not show Surahs that are 90% - 100%
-    if (avgGrpStr < 90) {
+    
+    // Check if the group has ANY weak or medium ayahs (< 90% strength)
+    const hasWeakOrMed = grp.items.some(item => item.combined < 90);
+    
+    // Always show Surahs if avgGrpStr < 90 OR if it contains ANY weak/medium ayahs!
+    if (avgGrpStr < 90 || hasWeakOrMed) {
       groups.push(grp);
     }
   });
