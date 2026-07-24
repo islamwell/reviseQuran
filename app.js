@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.7.5 (updated 2026-07-24 20:25)`;  
+    verDiv.textContent = `v1.7.6 (updated 2026-07-25 00:55)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.7.5`;
+    settVerBadge.textContent = `v1.7.6`;
   }
 }
 
