@@ -5,8 +5,8 @@
 
 /* ============ 3-COLOR RATING SCALE CONFIG ============ */
 export const RATING_SCALE = [
-  { level: 1, label: "Weak", icon: "🔴", pct: 30, iv: 1, class: "lvl-weak", color: "#e05656" },
-  { level: 2, label: "Medium", icon: "🟡", pct: 65, iv: 4, class: "lvl-medium", color: "#eab308" },
+  { level: 1, label: "Weak", icon: "🔴", pct: 10, iv: 1, class: "lvl-weak", color: "#e05656" },
+  { level: 2, label: "Medium", icon: "🟡", pct: 60, iv: 4, class: "lvl-medium", color: "#eab308" },
   { level: 3, label: "Strong", icon: "🟢", pct: 100, iv: 14, class: "lvl-strong", color: "#167566" }
 ];
 
@@ -320,8 +320,9 @@ export function getSurahRollup(sNum) {
   if (!surah || !surah.ayahs) return { status: "Not Started", memCount: 0, total: 0, pct: 0, avgStr: 0, strengthClass: "", weakCount: 0, medCount: 0, strongCount: 0 };
   
   const total = surah.ayahs.length;
+  const isKnown = isSurahMemorized(sNum);
   let memCount = 0;
-  let sumCorrectWords = 0;
+  let totalWeightedStrength = 0;
   let sumAyahWordCount = 0;
   let testedCount = 0;
   let weakCount = 0;
@@ -333,16 +334,16 @@ export function getSurahRollup(sNum) {
     const st = S.stats[id]?.a;
     const arStr = calculateStrength(id, 'a');
     
-    if (arStr !== null || (st && st.lvl)) {
+    if (arStr !== null || (st && st.lvl) || isKnown) {
       memCount++;
-      testedCount++;
+      if (arStr !== null || (st && st.lvl)) testedCount++;
       
-      const lvl = st?.lvl || (arStr >= 70 ? 3 : (arStr >= 40 ? 2 : 1));
+      const lvl = st?.lvl || (arStr >= 80 ? 3 : (arStr >= 50 ? 2 : 1));
+      // Base rating strength weights: Weak (🔴) = 10%, Medium (🟡) = 60%, Strong (🟢) = 100%
+      const verseStrength = (lvl === 3) ? 100 : ((lvl === 2) ? 60 : 10);
       const ayahWordCount = ay.ar ? ay.ar.trim().split(/\s+/).filter(Boolean).length : 1;
-      const mistakes = lvl === 3 ? 0 : (lvl === 2 ? 1 : 2);
-      const correctWords = Math.max(0, ayahWordCount - mistakes);
       
-      sumCorrectWords += correctWords;
+      totalWeightedStrength += (verseStrength * ayahWordCount);
       sumAyahWordCount += ayahWordCount;
       
       if (lvl === 3) strongCount++;
@@ -351,9 +352,8 @@ export function getSurahRollup(sNum) {
     }
   });
   
-  const isKnown = isSurahMemorized(sNum);
   const status = !isKnown && memCount === 0 ? "Not Started" : (memCount === total || isKnown ? "Complete" : "Partial");
-  const avgStr = sumAyahWordCount > 0 ? Math.round((sumCorrectWords / sumAyahWordCount) * 100) : (isKnown ? 100 : 0);
+  const avgStr = sumAyahWordCount > 0 ? Math.round(totalWeightedStrength / sumAyahWordCount) : (isKnown ? 100 : 0);
   const pct = isKnown ? 100 : Math.round((memCount / total) * 100);
   
   // If surah is memorized but no individual ayah stats, treat all as strong
@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.7.2 (updated 2026-07-24 19:52)`;  
+    verDiv.textContent = `v1.7.3 (updated 2026-07-24 20:17)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.7.2`;
+    settVerBadge.textContent = `v1.7.3`;
   }
 }
 
