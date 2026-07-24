@@ -380,11 +380,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.6.1 (updated 2026-07-24 17:55)`;  
+    verDiv.textContent = `v1.6.2 (updated 2026-07-24 18:09)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.6.0`;
+    settVerBadge.textContent = `v1.6.2`;
   }
 }
 
@@ -1076,10 +1076,10 @@ function renderPracticeCard() {
       <span class="phase-chip recite">① Recite from Memory</span>
       <div class="p-card">
         <span class="p-ref">${cleanEnName(ayah.s.name)} ${ayah.s.n}:${ayah.ai + 1}</span>
-        <p class="p-prompt">Recite aloud from memory — then tap to check.</p>
+        <p class="p-prompt">Recite aloud from memory — then wait or grade yourself.</p>
         <div class="hidden-text revealed" id="hidTextReveal" style="min-height: 80px; display: flex; flex-direction: column; gap: 10px; justify-content: center;">
-          <span class="reveal-ar" id="prArabic" style="min-height: 40px; display: block;"></span>
-          <span class="hm-en" id="prTrans" style="opacity:0; transition: opacity 0.5s; font-size: 0.95rem; color: var(--ink2);"></span>
+          <span class="hm-en" id="prTrans" style="font-size: 0.95rem; color: var(--ink2);">${ayah.en}</span>
+          <span class="reveal-ar" id="prArabic" style="min-height: 40px; display: block; opacity: 0; transition: opacity 0.5s;">${ayah.ar}</span>
         </div>
       </div>
       <div class="grade-row" id="practiceGradeRow">
@@ -1095,32 +1095,19 @@ function renderPracticeCard() {
     `;
     
     const arEl = document.getElementById('prArabic');
-    const trEl = document.getElementById('prTrans');
     const fullText = ayah.ar;
-    trEl.textContent = ayah.en;
     
-    const typeSpeed = Math.max(30, Math.min(80, 3000 / (fullText.length || 1))); 
-    let charIdx = 0;
+    // Dynamic delay: 1s min, 2.5 min (150,000ms) max for longest ayah (1194 chars)
+    const maxChars = 1194;
+    const fraction = Math.min(1, (fullText.length || 1) / maxChars);
+    const delay = 1000 + fraction * (150000 - 1000);
     
-    function typeWriter() {
+    pBody._revealTimer = setTimeout(() => {
       const currentAyah = practiceQueue[practiceIndex];
-      if (!currentAyah || currentAyah.id !== ayah.id) return;
-      
-      if (charIdx <= fullText.length) {
-        arEl.textContent = fullText.substring(0, charIdx);
-        charIdx++;
-        setTimeout(typeWriter, typeSpeed);
-      } else {
-        setTimeout(() => {
-          const checkAyah = practiceQueue[practiceIndex];
-          if (checkAyah && checkAyah.id === ayah.id && trEl) {
-             trEl.style.opacity = '1';
-          }
-        }, 1000);
+      if (currentAyah && currentAyah.id === ayah.id && arEl) {
+         arEl.style.opacity = '1';
       }
-    }
-    
-    typeWriter();
+    }, delay);
   }
 }
 
