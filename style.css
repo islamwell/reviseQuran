@@ -2013,6 +2013,19 @@ nav {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1;
+  padding: 4px 8px 4px 0;
+  border-radius: 8px;
+  transition: background 0.2s, transform 0.15s;
+  cursor: pointer;
+}
+
+.gh-left:hover {
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.gh-left:active {
+  transform: scale(0.98);
 }
 
 .gh-ar {
@@ -2042,6 +2055,14 @@ nav {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.gh-right:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .chevron-ic {

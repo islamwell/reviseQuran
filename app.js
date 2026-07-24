@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.6.8 (updated 2026-07-24 19:30)`;  
+    verDiv.textContent = `v1.6.9 (updated 2026-07-24 19:39)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.6.8`;
+    settVerBadge.textContent = `v1.6.9`;
   }
 }
 
@@ -598,38 +598,60 @@ function renderRevise() {
     return;
   }
   
-  // Sort by weakest memory strength
-  const queue = memorized.map(ayah => ({
-    ...ayah,
-    combined: getCombinedStrength(ayah.id) ?? 0,
-    sa: calculateStrength(ayah.id, 'a'),
-    sm: calculateStrength(ayah.id, 'm')
-  }))
-  .sort((a, b) => a.combined - b.combined)
-  .slice(0, 25);
-  
-  // Group queue items by Surah while preserving weakest priority order
+  // Group all memorized ayahs by Surah
   const groupsMap = new Map();
-  queue.forEach(item => {
-    const sNum = item.s.n;
+  memorized.forEach(ayah => {
+    const sNum = ayah.s.n;
     if (!groupsMap.has(sNum)) {
       groupsMap.set(sNum, {
-        surah: item.s,
+        surah: ayah.s,
         items: []
       });
     }
-    groupsMap.get(sNum).items.push(item);
+    const combined = getCombinedStrength(ayah.id) ?? 0;
+    groupsMap.get(sNum).items.push({
+      ...ayah,
+      combined,
+      sa: calculateStrength(ayah.id, 'a'),
+      sm: calculateStrength(ayah.id, 'm')
+    });
   });
   
-  const groups = Array.from(groupsMap.values());
+  const groups = [];
+  groupsMap.forEach((grp) => {
+    // Sort items within group weakest first
+    grp.items.sort((a, b) => a.combined - b.combined);
+    const avgGrpStr = Math.round(grp.items.reduce((acc, curr) => acc + curr.combined, 0) / grp.items.length);
+    grp.avgGrpStr = avgGrpStr;
+    // Do not show Surahs that are 90% - 100%
+    if (avgGrpStr < 90) {
+      groups.push(grp);
+    }
+  });
+  
+  // Show the weakest Surah first (ascending avgGrpStr)
+  groups.sort((a, b) => a.avgGrpStr - b.avgGrpStr);
+  
+  if (!groups.length) {
+    container.innerHTML = `
+      <div class="empty" style="padding: 30px 20px;">
+        <span class="big">🎉</span>
+        <b style="font-size:1.1rem;color:var(--gold);">All Revision Goals Met!</b><br>
+        <span style="font-size:0.85rem;color:var(--ink2);margin-top:6px;display:block;">All your memorized Surahs are currently at 90%+ strength. Keep up the excellent work!</span>
+      </div>
+    `;
+    return;
+  }
+  
+  const totalQueuedVerses = groups.reduce((acc, g) => acc + g.items.length, 0);
   
   let html = `
     <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:0.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;">
-        ${queue.length} Queue Items (${groups.length} Surahs)
+        ${groups.length} Surahs Needing Revision (${totalQueuedVerses} Verses)
       </span>
       <button class="cta" style="width:auto;padding:8px 16px;font-size:0.8rem;" onclick="startPracticeSession()">
-        Start Revision →
+        Revise All →
       </button>
     </div>
   `;
@@ -638,21 +660,21 @@ function renderRevise() {
     const sNum = grp.surah.n;
     const surahAr = grp.surah.ar;
     const surahName = grp.surah.name;
-    const avgGrpStr = Math.round(grp.items.reduce((acc, curr) => acc + curr.combined, 0) / grp.items.length);
-    const grpCol = cellBg(avgGrpStr);
+    const grpCol = cellBg(grp.avgGrpStr);
     
+    // Collapsed by default (no 'expanded' class)
     html += `
-      <div class="revise-group-card expanded" id="revise-group-${sNum}">
-        <div class="group-header" onclick="toggleReviseGroup(${sNum})">
-          <div class="gh-left">
+      <div class="revise-group-card" id="revise-group-${sNum}">
+        <div class="group-header">
+          <div class="gh-left" onclick="startSurahRevision(${sNum}); event.stopPropagation();" title="Tap name to revise this Surah">
             <span class="gh-ar">${cleanArName(surahAr)}</span>
             <div class="gh-info">
               <b class="gh-title">${cleanEnName(surahName)}</b>
-              <span class="gh-sub">${grp.items.length} ${grp.items.length === 1 ? 'verse' : 'verses'} queued</span>
+              <span class="gh-sub">${grp.items.length} ${grp.items.length === 1 ? 'verse' : 'verses'} · Tap name to revise ⚡</span>
             </div>
           </div>
-          <div class="gh-right">
-            <span class="strength-dot" style="background:${grpCol}1c;color:${grpCol}">${avgGrpStr}%</span>
+          <div class="gh-right" onclick="toggleReviseGroup(${sNum}); event.stopPropagation();" title="Tap triangle to expand/collapse">
+            <span class="strength-dot" style="background:${grpCol}1c;color:${grpCol}">${grp.avgGrpStr}%</span>
             <span class="chevron-ic">▼</span>
           </div>
         </div>
@@ -1130,6 +1152,31 @@ function startPracticeSession() {
   
   document.getElementById('practice').classList.add('open');
   renderPracticeCard();
+}
+
+export function startSurahRevision(sNum) {
+  const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
+  if (!surah || !surah.ayahs) return;
+  
+  const ayahs = surah.ayahs.map((ay, idx) => ({
+    s: surah,
+    id: idOf(surah.n, idx),
+    ai: idx,
+    ar: ay.ar,
+    en: ay.en,
+    combined: getCombinedStrength(idOf(surah.n, idx)) ?? 0
+  }));
+  
+  practiceQueue = ayahs;
+  practiceIndex = 0;
+  verifyDailyStreak();
+  
+  const dlg = document.getElementById('dlgSessionConfig');
+  if (dlg) dlg.close();
+  
+  document.getElementById('practice').classList.add('open');
+  renderPracticeCard();
+  toast(`Revising ${cleanEnName(surah.name)}`);
 }
 
 export function endSession(finished) {
@@ -1787,6 +1834,7 @@ window.toggleSurahMemorized = toggleSurahMemorized;
 window.bulkMarkSurahMemorized = bulkMarkSurahMemorized;
 window.setAyahRating = setAyahRating;
 window.startPracticeSession = startPracticeSession;
+window.startSurahRevision = startSurahRevision;
 window.endSession = endSession;
 window.openSessionConfig = openSessionConfig;
 window.gradePractice = gradePractice;
