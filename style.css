@@ -1543,13 +1543,61 @@ dialog[open] .modal-overlay {
 }
 
 .p-prompt {
-  font-size: 0.65rem;
+  font-size: 0.74rem;
   font-weight: 600;
-  color: var(--ink3);
+  color: var(--ink2);
   margin-top: 6px;
   line-height: 1.4;
-  opacity: 0.75;
+  opacity: 0.85;
 }
+
+.grade-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 20px;
+  width: 100%;
+}
+
+.grade {
+  flex: 1;
+  max-width: 120px;
+  padding: 14px 8px 12px;
+  border-radius: var(--r-md);
+  font-weight: 800;
+  font-size: 0.82rem;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: transform 0.15s var(--ease-spring), filter 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+  cursor: pointer;
+}
+
+.grade small {
+  font-size: 0.6rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.grade:active {
+  transform: scale(0.92);
+}
+
+.grade.g1 { background: #FF3333; color: #FFFFFF; }
+.grade.g1:hover { filter: brightness(1.1); }
+
+.grade.g2 { background: #FFFF00; color: #000000; }
+.grade.g2:hover { filter: brightness(1.05); }
+
+.grade.g3 { background: #00C800; color: #FFFFFF; }
+.grade.g3:hover { filter: brightness(1.1); }
+
+.grade.g4 { background: var(--gold); color: #000000; }
 
 .hidden-text {
   margin-top: 18px;

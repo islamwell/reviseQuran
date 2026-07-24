@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.6.5 (updated 2026-07-24 19:16)`;  
+    verDiv.textContent = `v1.6.6 (updated 2026-07-24 19:21)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.6.5`;
+    settVerBadge.textContent = `v1.6.6`;
   }
 }
 
@@ -1103,7 +1103,7 @@ function renderPracticeCard() {
           <span class="p-ref-ar">${cleanArName(ayah.s.ar)}</span>
           <span>${cleanEnName(ayah.s.name)} ${ayah.s.n}:${ayah.ai + 1}</span>
         </span>
-        <p class="p-prompt">Recite aloud from memory — then wait or grade yourself.</p>
+        <p class="p-prompt">Recite aloud from memory</p>
         <div class="hidden-text revealed" id="hidTextReveal" style="min-height: 80px; display: flex; flex-direction: column; gap: 10px; justify-content: center;">
           <span class="hm-en" id="prTrans" style="font-size: 0.95rem; color: var(--ink2);">${ayah.en}</span>
           <span class="reveal-ar" id="prArabic" style="min-height: 40px; display: block;"></span>
