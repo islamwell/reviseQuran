@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.7.0 (updated 2026-07-24 19:42)`;  
+    verDiv.textContent = `v1.7.1 (updated 2026-07-24 19:46)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.7.0`;
+    settVerBadge.textContent = `v1.7.1`;
   }
 }
 
@@ -789,30 +789,213 @@ export function toggleSurahMemorized(sNum) {
   toast(S.memorized[sNum] ? "Surah marked as memorized! ✦" : "Removed surah from memorized tracking");
 }
 
-/* ============ 4. RENDER HISTORY VIEW (Logs) ============ */
+/* ============ 4. RENDER HISTORY VIEW (Monthly Calendar & Logs) ============ */
+let calendarYear = new Date().getFullYear();
+let calendarMonth = new Date().getMonth(); // 0-11
+let selectedCalDateStr = new Date().toISOString().split('T')[0];
+
+export function changeCalendarMonth(offset) {
+  calendarMonth += offset;
+  if (calendarMonth < 0) {
+    calendarMonth = 11;
+    calendarYear--;
+  } else if (calendarMonth > 11) {
+    calendarMonth = 0;
+    calendarYear++;
+  }
+  renderHistory();
+}
+window.changeCalendarMonth = changeCalendarMonth;
+
+export function selectCalendarDay(dateStr) {
+  selectedCalDateStr = dateStr;
+  renderHistory();
+}
+window.selectCalendarDay = selectCalendarDay;
+
+export function deleteLogItem(logId) {
+  if (!S.logs) return;
+  S.logs = S.logs.filter(l => (l.id || l.timestamp?.toString() || l.timestamp) !== logId);
+  saveState();
+  renderHistory();
+  toast("Recitation log deleted");
+}
+window.deleteLogItem = deleteLogItem;
+
+export function openLogForDate(dateStr) {
+  const dlg = document.getElementById('dlgAddLog');
+  if (dlg) {
+    const dateInput = document.getElementById('logDateInput');
+    if (dateInput) dateInput.value = dateStr;
+    dlg.showModal();
+  }
+}
+window.openLogForDate = openLogForDate;
+
+export function selectSurahAutocomplete(sNum) {
+  const surah = QURAN_DATA[sNum] || QURAN_DATA[sNum.toString()];
+  if (!surah) return;
+  const notesInput = document.getElementById('logNotesInput');
+  const countInput = document.getElementById('logCountInput');
+  const acDiv = document.getElementById('surahAutocomplete');
+  
+  if (notesInput) {
+    notesInput.value = `Surah ${cleanEnName(surah.name)} (${surah.n})`;
+  }
+  if (countInput && surah.ayahs) {
+    countInput.value = surah.ayahs.length;
+  }
+  if (acDiv) {
+    acDiv.classList.remove('show');
+  }
+}
+window.selectSurahAutocomplete = selectSurahAutocomplete;
+
 function renderHistory() {
   const container = document.getElementById('historyLogList');
-  if (!container) return;
+  const calContainer = document.getElementById('calendarContainer');
+  const dayDetailsContainer = document.getElementById('dayLogDetails');
   
-  if (!S.logs || S.logs.length === 0) {
-    container.innerHTML = `
-      <div class="empty">
-        <span class="big">📖</span>
-        No recitation logs recorded yet.<br>Click <b>"Log a Recitation Session"</b> above to record who you recited to.
+  if (!S.logs) S.logs = [];
+
+  // 1. Render Monthly Calendar
+  if (calContainer) {
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    const firstDayIndex = new Date(calendarYear, calendarMonth, 1).getDay();
+    const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    // Group logs by isoDate (YYYY-MM-DD)
+    const logsByDate = {};
+    S.logs.forEach(l => {
+      const d = l.isoDate || (l.date ? new Date(l.date).toISOString().split('T')[0] : todayStr);
+      if (!logsByDate[d]) logsByDate[d] = [];
+      logsByDate[d].push(l);
+    });
+
+    let calGridHtml = '';
+    // Empty cells before day 1
+    for (let i = 0; i < firstDayIndex; i++) {
+      calGridHtml += `<div class="cal-day empty"></div>`;
+    }
+    
+    // Day cells
+    for (let d = 1; d <= daysInMonth; d++) {
+      const monthStr = String(calendarMonth + 1).padStart(2, '0');
+      const dayStr = String(d).padStart(2, '0');
+      const dateStr = `${calendarYear}-${monthStr}-${dayStr}`;
+      
+      const dayLogs = logsByDate[dateStr] || [];
+      const totalVerses = dayLogs.reduce((sum, l) => sum + (parseInt(l.count) || 1), 0);
+      
+      let lvlClass = '';
+      if (totalVerses > 15) lvlClass = 'lvl-3';
+      else if (totalVerses > 5) lvlClass = 'lvl-2';
+      else if (totalVerses > 0) lvlClass = 'lvl-1';
+      
+      const isToday = dateStr === todayStr;
+      const isSelected = dateStr === selectedCalDateStr;
+      
+      calGridHtml += `
+        <div class="cal-day ${lvlClass} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" 
+             onclick="selectCalendarDay('${dateStr}')" title="${d} ${monthNames[calendarMonth]} ${calendarYear}: ${totalVerses} verses">
+          <span>${d}</span>
+          ${totalVerses > 0 ? `<span class="dot-count">${totalVerses}v</span>` : ''}
+        </div>
+      `;
+    }
+
+    calContainer.innerHTML = `
+      <div class="cal-card">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="changeCalendarMonth(-1)">◄ Prev</button>
+          <div class="cal-title">${monthNames[calendarMonth]} ${calendarYear}</div>
+          <button class="cal-nav-btn" onclick="changeCalendarMonth(1)">Next ►</button>
+        </div>
+        <div class="cal-weekdays">
+          <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+        </div>
+        <div class="cal-grid">
+          ${calGridHtml}
+        </div>
       </div>
     `;
-    return;
   }
-  
-  container.innerHTML = S.logs.map(log => `
-    <div class="log-item">
-      <div>
-        <span class="who">Recited to: ${log.who}</span>
-        <div style="font-size:0.85rem;font-weight:700;margin-top:4px;color:var(--ink)">${log.notes}</div>
-        <small style="font-size:0.68rem;color:var(--ink3)">${log.date}</small>
+
+  // 2. Render Selected Day Details
+  if (dayDetailsContainer) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const targetDateStr = selectedCalDateStr || todayStr;
+    const dayLogs = S.logs.filter(l => (l.isoDate || (l.date ? new Date(l.date).toISOString().split('T')[0] : todayStr)) === targetDateStr);
+    const dateObj = new Date(targetDateStr + 'T00:00:00');
+    const formattedDate = dateObj.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    
+    if (dayLogs.length > 0) {
+      const totalVerses = dayLogs.reduce((sum, l) => sum + (parseInt(l.count) || 1), 0);
+      dayDetailsContainer.innerHTML = `
+        <div class="sett-card" style="border:1.5px solid var(--acc);background:var(--acc-soft);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div>
+              <b style="font-size:0.95rem;color:var(--ink);">${formattedDate}</b>
+              <small style="display:block;font-size:0.72rem;color:var(--ink2);margin-top:2px;">${dayLogs.length} session(s) logged</small>
+            </div>
+            <span style="font-size:0.8rem;background:var(--acc);color:#fff;padding:4px 10px;border-radius:12px;font-weight:800;">${totalVerses} Verses Total</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${dayLogs.map(l => `
+              <div class="log-item" style="background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <span class="who" style="font-size:0.82rem;font-weight:800;color:var(--gold);">Recited to: ${l.who}</span>
+                  <div style="font-size:0.88rem;font-weight:700;margin-top:2px;color:var(--ink);">${l.notes}</div>
+                  <small style="font-size:0.7rem;color:var(--ink3);">${l.count || 10} ayahs recited</small>
+                </div>
+                <button class="btn-secondary" style="padding:4px 10px;font-size:0.72rem;width:auto;border-color:var(--danger);color:var(--danger);" onclick="deleteLogItem('${l.id || l.timestamp}')">
+                  Delete
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    } else {
+      dayDetailsContainer.innerHTML = `
+        <div style="background:var(--bg2);padding:14px;border-radius:12px;border:1.5px dashed var(--line2);text-align:center;font-size:0.78rem;color:var(--ink2);">
+          No recitations logged for <b>${formattedDate}</b>.
+          <button class="btn-secondary" style="margin-top:10px;padding:6px 14px;font-size:0.78rem;width:auto;margin-left:auto;margin-right:auto;display:block;" onclick="openLogForDate('${targetDateStr}')">
+            + Log Recitation For This Day
+          </button>
+        </div>
+      `;
+    }
+  }
+
+  // 3. Render All Recent Logs List
+  if (container) {
+    if (!S.logs || S.logs.length === 0) {
+      container.innerHTML = `
+        <div class="empty">
+          <span class="big">📖</span>
+          No recitation logs recorded yet.<br>Click <b>"+ Log Recitation"</b> above to record your recitation sessions.
+        </div>
+      `;
+      return;
+    }
+    
+    container.innerHTML = S.logs.map(log => `
+      <div class="log-item" style="margin-bottom:8px;">
+        <div style="flex:1;">
+          <span class="who">Recited to: ${log.who}</span>
+          <div style="font-size:0.85rem;font-weight:700;margin-top:4px;color:var(--ink)">${log.notes}</div>
+          <small style="font-size:0.68rem;color:var(--ink3)">${log.date || log.isoDate} · ${log.count || 10} ayahs</small>
+        </div>
+        <button class="btn-secondary" style="padding:4px 8px;font-size:0.7rem;width:auto;border-color:var(--line2);" onclick="deleteLogItem('${log.id || log.timestamp}')">✕</button>
       </div>
-    </div>
-  `).join('');
+    `).join('');
+  }
 }
 
 /* ============ 5. RENDER INSIGHTS VIEW (Analytics) ============ */
@@ -1568,20 +1751,94 @@ function setupEventListeners() {
   if (btnAddLog) {
     btnAddLog.onclick = () => {
       const dlg = document.getElementById('dlgAddLog');
+      const dateInput = document.getElementById('logDateInput');
+      if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toISOString().split('T')[0];
+      }
       if (dlg) dlg.showModal();
     };
+  }
+  
+  const notesInput = document.getElementById('logNotesInput');
+  const acDiv = document.getElementById('surahAutocomplete');
+  if (notesInput && acDiv) {
+    notesInput.oninput = (e) => {
+      const val = e.target.value.trim().toLowerCase();
+      if (!val) {
+        acDiv.classList.remove('show');
+        return;
+      }
+      
+      const matches = [];
+      for (const sNum in QURAN_DATA) {
+        const surah = QURAN_DATA[sNum];
+        if (!surah) continue;
+        const enName = cleanEnName(surah.name);
+        const arName = cleanArName(surah.ar);
+        if (
+          surah.n.toString() === val ||
+          enName.toLowerCase().includes(val) ||
+          surah.name.toLowerCase().includes(val) ||
+          arName.includes(val)
+        ) {
+          matches.push(surah);
+        }
+      }
+      
+      if (matches.length > 0) {
+        acDiv.innerHTML = matches.slice(0, 6).map(s => `
+          <div class="ac-item" onclick="selectSurahAutocomplete(${s.n})">
+            <span><b>${cleanEnName(s.name)}</b> (${s.n})</span>
+            <span class="ac-ar">${cleanArName(s.ar)}</span>
+          </div>
+        `).join('');
+        acDiv.classList.add('show');
+      } else {
+        acDiv.classList.remove('show');
+      }
+    };
+    
+    document.addEventListener('click', (e) => {
+      if (!acDiv.contains(e.target) && e.target !== notesInput) {
+        acDiv.classList.remove('show');
+      }
+    });
   }
   
   const btnSaveLog = document.getElementById('btnSaveLog');
   if (btnSaveLog) {
     btnSaveLog.onclick = () => {
-      const who = document.getElementById('logWhoInput').value.trim();
-      const notes = document.getElementById('logNotesInput').value.trim();
+      const whoInput = document.getElementById('logWhoInput');
+      const notesInput = document.getElementById('logNotesInput');
+      const countInput = document.getElementById('logCountInput');
+      const dateInput = document.getElementById('logDateInput');
+      
+      const who = whoInput ? whoInput.value.trim() : '';
+      const notes = notesInput ? notesInput.value.trim() : '';
+      const count = countInput ? (parseInt(countInput.value) || 10) : 10;
+      const dateVal = dateInput && dateInput.value ? dateInput.value : new Date().toISOString().split('T')[0];
+      
       if (!who || !notes) { toast("Please enter details"); return; }
       
       if (!S.logs) S.logs = [];
-      S.logs.unshift({ date: new Date().toLocaleDateString(), who, notes });
+      const timestamp = Date.now();
+      const dateObj = new Date(dateVal + 'T00:00:00');
+      const dateFormatted = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+      
+      S.logs.unshift({
+        id: 'log_' + timestamp,
+        timestamp,
+        isoDate: dateVal,
+        date: dateFormatted,
+        who,
+        notes,
+        count
+      });
+      
       saveState();
+      
+      if (whoInput) whoInput.value = '';
+      if (notesInput) notesInput.value = '';
       
       const dlg = document.getElementById('dlgAddLog');
       if (dlg) dlg.close();

@@ -131,17 +131,29 @@
     <div id="quranSurahList" style="margin-top:14px"></div>
   </section>
 
-  <!-- 4. HISTORY VIEW (Recitation Log) -->
+  <!-- 4. HISTORY VIEW (Recitation Log & Monthly Calendar) -->
   <section class="view pad" id="v-history">
-    <div style="margin-top:10px">
-      <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Recitation Log</h2>
-      <p style="font-size:0.76rem;color:var(--ink2);margin-top:5px;line-height:1.6">Track your recitation sessions: Who did you recite to? (Teacher, Imam, Friend, Family, or Self).</p>
+    <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-size:1.15rem;font-weight:800;letter-spacing:-.02em">Recitation Log &amp; Calendar</h2>
+        <p style="font-size:0.76rem;color:var(--ink2);margin-top:4px;line-height:1.5">Track teacher recitations &amp; view your monthly progress calendar.</p>
+      </div>
+      <button class="cta" style="width:auto;padding:8px 16px;font-size:0.8rem;" id="btnAddLog">
+        <span>+ Log Recitation</span>
+      </button>
     </div>
-    <button class="cta" style="margin-top:14px;" id="btnAddLog">
-      <span>Log a Recitation Session</span>
-      <span class="arrow">+</span>
-    </button>
-    <div id="historyLogList" style="margin-top:18px;"></div>
+
+    <!-- Monthly Calendar Container -->
+    <div id="calendarContainer" style="margin-top:16px;"></div>
+
+    <!-- Selected Day Details Container -->
+    <div id="dayLogDetails" style="margin-top:16px;"></div>
+
+    <!-- Full History Log List -->
+    <div style="margin-top:20px;">
+      <h3 style="font-size:0.92rem;font-weight:800;color:var(--ink);margin-bottom:10px;">All Recitation Logs</h3>
+      <div id="historyLogList"></div>
+    </div>
   </section>
 
   <!-- 5. SETTINGS VIEW -->
@@ -296,7 +308,7 @@
       <a href="#" onclick="go('quran'); return false;">Quran</a>
       <a href="#" onclick="go('settings'); return false;">Settings</a>
     </div>
-    <div class="ver" id="appVersion">v1.7.0 (updated 2026-07-24 19:42)</div>
+    <div class="ver" id="appVersion">v1.7.1 (updated 2026-07-24 19:46)</div>
     <div>Built with patience for memorizers of the Holy Quran.</div>
   </footer>
 </div>
@@ -361,17 +373,33 @@
 
 <!-- Add Log Session Modal -->
 <dialog id="dlgAddLog">
-  <div class="modal-overlay">
+  <div class="modal-overlay" style="max-width:440px;">
     <button class="close-top" onclick="document.getElementById('dlgAddLog').close()">✕</button>
     <h3 class="modal-title">Log Recitation Session</h3>
+    <p style="font-size:0.76rem;color:var(--ink2);margin-bottom:12px;">Record your recitation with your teacher or supervisor.</p>
+    
     <div class="setting-grp">
-      <label>Recited To</label>
+      <label>Recited To (Teacher / Imam / Self)</label>
       <input type="text" id="logWhoInput" placeholder="e.g. Ustadh Ahmad, Imam, Self..." style="width:100%;padding:10px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);font-weight:700;">
     </div>
-    <div class="setting-grp">
-      <label>Surah &amp; Ayah Notes</label>
-      <input type="text" id="logNotesInput" placeholder="e.g. Surah Al-Mulk 1-30, no mistakes" style="width:100%;padding:10px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);font-weight:700;">
+    
+    <div class="setting-grp" style="position:relative;">
+      <label>Surah Name (Auto-complete)</label>
+      <input type="text" id="logNotesInput" placeholder="Type Surah name (e.g. Mulk, Yasin, Baqarah)..." autocomplete="off" style="width:100%;padding:10px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);font-weight:700;">
+      <div id="surahAutocomplete" class="autocomplete-dropdown"></div>
     </div>
+    
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+      <div class="setting-grp">
+        <label>Ayahs Count</label>
+        <input type="number" id="logCountInput" placeholder="e.g. 30" min="1" value="10" style="width:100%;padding:10px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);font-weight:700;">
+      </div>
+      <div class="setting-grp">
+        <label>Session Date</label>
+        <input type="date" id="logDateInput" style="width:100%;padding:10px;border-radius:8px;background:var(--bg2);border:1px solid var(--line);color:var(--ink);font-weight:700;">
+      </div>
+    </div>
+    
     <button class="cta" id="btnSaveLog" style="margin-top:16px;">
       <span>Save Recitation Log</span>
       <span class="arrow">✓</span>

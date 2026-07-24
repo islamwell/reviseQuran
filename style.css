@@ -2512,6 +2512,173 @@ input:checked + .slider:before {
   border: 1.5px solid rgba(224, 86, 86, 0.45) !important;
 }
 
+/* ============ AUTOCOMPLETE DROPDOWN ============ */
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg);
+  border: 1.5px solid var(--gold);
+  border-radius: var(--r-md);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  display: none;
+  margin-top: 4px;
+}
+
+.autocomplete-dropdown.show {
+  display: block;
+}
+
+.ac-item {
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.85rem;
+  color: var(--ink);
+  transition: background 0.15s;
+}
+
+.ac-item:hover {
+  background: rgba(211, 156, 67, 0.18);
+}
+
+.ac-item .ac-ar {
+  font-family: var(--font-arabic);
+  color: var(--gold);
+  font-size: 1.1rem;
+}
+
+/* ============ MONTHLY CALENDAR GRID ============ */
+.cal-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.cal-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.cal-nav-btn {
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.cal-nav-btn:hover {
+  background: var(--line2);
+  border-color: var(--gold);
+}
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: var(--ink3);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s var(--ease-spring), filter 0.2s, box-shadow 0.2s;
+  background: var(--bg2);
+  color: var(--ink2);
+}
+
+.cal-day:hover {
+  transform: scale(1.1);
+  z-index: 5;
+  filter: brightness(1.15);
+}
+
+.cal-day.empty {
+  opacity: 0.15;
+  pointer-events: none;
+  border-color: transparent;
+  background: transparent;
+}
+
+.cal-day.today {
+  border: 2px solid var(--gold) !important;
+  box-shadow: 0 0 10px rgba(211, 156, 67, 0.4);
+}
+
+.cal-day.selected {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
+}
+
+/* Recitation Volume Colors */
+.cal-day.lvl-1 {
+  background: rgba(16, 185, 129, 0.25);
+  border-color: rgba(16, 185, 129, 0.5);
+  color: var(--ink);
+}
+
+.cal-day.lvl-2 {
+  background: rgba(16, 185, 129, 0.6);
+  border-color: rgba(16, 185, 129, 0.85);
+  color: #ffffff;
+}
+
+.cal-day.lvl-3 {
+  background: #10B981;
+  border-color: #059669;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+}
+
+.cal-day .dot-count {
+  font-size: 0.58rem;
+  font-weight: 700;
+  margin-top: 1px;
+  opacity: 0.9;
+}
+
 
 
 
