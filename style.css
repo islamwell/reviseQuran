@@ -1940,7 +1940,7 @@ nav {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  font-size: 0.62rem;
+  font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   color: var(--ink3);
@@ -1948,11 +1948,27 @@ nav {
   border-radius: 14px;
   transition: color 0.25s, background 0.25s;
   flex: 1;
+  cursor: pointer;
 }
 
 .nav-btn .ic {
-  font-size: 1.25rem;
-  transition: transform 0.3s var(--ease-spring);
+  font-size: 1.45rem;
+  font-weight: 800;
+  display: inline-block;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.25s;
+}
+
+.nav-btn:hover {
+  color: var(--ink);
+}
+
+.nav-btn:hover .ic {
+  transform: translateY(-4px) scale(1.22);
+  filter: drop-shadow(0 4px 10px rgba(16, 185, 129, 0.4));
+}
+
+.nav-btn:active .ic {
+  transform: translateY(0) scale(0.92);
 }
 
 .nav-btn.on {
@@ -1960,7 +1976,106 @@ nav {
 }
 
 .nav-btn.on .ic {
-  transform: translateY(-2px) scale(1.12);
+  transform: translateY(-2px) scale(1.15);
+}
+
+/* ============ EXPANDABLE REVISE GROUP CARDS ============ */
+.revise-group-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color 0.25s, box-shadow 0.25s;
+}
+
+.revise-group-card:hover {
+  border-color: var(--line2);
+}
+
+.group-header {
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  user-select: none;
+  background: var(--bg2);
+  transition: background 0.2s;
+}
+
+.group-header:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.gh-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gh-ar {
+  font-family: var(--font-arabic);
+  font-size: 1.35rem;
+  color: var(--gold);
+}
+
+.gh-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.gh-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.gh-sub {
+  font-size: 0.72rem;
+  color: var(--ink3);
+  margin-top: 1px;
+}
+
+.gh-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.chevron-ic {
+  font-size: 0.75rem;
+  color: var(--ink3);
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.revise-group-card.expanded .chevron-ic {
+  transform: rotate(180deg);
+}
+
+.group-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--card);
+}
+
+.revise-group-card.expanded .group-body {
+  max-height: 2500px;
+}
+
+.group-body-inner {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.group-body-inner .due-item {
+  margin-bottom: 0;
+  background: var(--bg);
 }
 
 .nav-practice {

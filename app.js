@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.6.7 (updated 2026-07-24 19:24)`;  
+    verDiv.textContent = `v1.6.8 (updated 2026-07-24 19:30)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.6.7`;
+    settVerBadge.textContent = `v1.6.8`;
   }
 }
 
@@ -574,6 +574,14 @@ function renderHome() {
   }
 }
 
+export function toggleReviseGroup(sNum) {
+  const el = document.getElementById(`revise-group-${sNum}`);
+  if (el) {
+    el.classList.toggle('expanded');
+  }
+}
+window.toggleReviseGroup = toggleReviseGroup;
+
 /* ============ 2. RENDER REVISE VIEW (Intelligent Queue) ============ */
 function renderRevise() {
   const container = document.getElementById('revisionQueueList');
@@ -598,35 +606,83 @@ function renderRevise() {
     sm: calculateStrength(ayah.id, 'm')
   }))
   .sort((a, b) => a.combined - b.combined)
-  .slice(0, 15);
+  .slice(0, 25);
   
-  container.innerHTML = `
+  // Group queue items by Surah while preserving weakest priority order
+  const groupsMap = new Map();
+  queue.forEach(item => {
+    const sNum = item.s.n;
+    if (!groupsMap.has(sNum)) {
+      groupsMap.set(sNum, {
+        surah: item.s,
+        items: []
+      });
+    }
+    groupsMap.get(sNum).items.push(item);
+  });
+  
+  const groups = Array.from(groupsMap.values());
+  
+  let html = `
     <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
       <span style="font-size:0.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;">
-        ${queue.length} Queue Items Ready
+        ${queue.length} Queue Items (${groups.length} Surahs)
       </span>
       <button class="cta" style="width:auto;padding:8px 16px;font-size:0.8rem;" onclick="startPracticeSession()">
         Start Revision →
       </button>
     </div>
-    ` + queue.map(item => {
-      const col = cellBg(item.combined);
-      const ratingLvl = strengthToRating(item.combined);
-      const scaleObj = RATING_SCALE.find(r => r.level === ratingLvl) || RATING_SCALE[0];
-      
-      return `
-        <div class="due-item" onclick="openAyahSheet('${item.id}')">
-          <span class="strength-dot" style="background:${col}1c;color:${col}">${item.combined}%</span>
-          <span style="flex:1;min-width:0;">
-            <span class="ref">${cleanEnName(item.s.name)} · ${item.ai + 1}</span>
-            <span class="ar-line">${item.ar}</span>
-          </span>
-          <span class="why">
-            <span class="lvl-badge ${scaleObj.class}">${scaleObj.label}</span>
-          </span>
+  `;
+  
+  groups.forEach((grp) => {
+    const sNum = grp.surah.n;
+    const surahAr = grp.surah.ar;
+    const surahName = grp.surah.name;
+    const avgGrpStr = Math.round(grp.items.reduce((acc, curr) => acc + curr.combined, 0) / grp.items.length);
+    const grpCol = cellBg(avgGrpStr);
+    
+    html += `
+      <div class="revise-group-card expanded" id="revise-group-${sNum}">
+        <div class="group-header" onclick="toggleReviseGroup(${sNum})">
+          <div class="gh-left">
+            <span class="gh-ar">${cleanArName(surahAr)}</span>
+            <div class="gh-info">
+              <b class="gh-title">${cleanEnName(surahName)}</b>
+              <span class="gh-sub">${grp.items.length} ${grp.items.length === 1 ? 'verse' : 'verses'} queued</span>
+            </div>
+          </div>
+          <div class="gh-right">
+            <span class="strength-dot" style="background:${grpCol}1c;color:${grpCol}">${avgGrpStr}%</span>
+            <span class="chevron-ic">▼</span>
+          </div>
         </div>
-      `;
-    }).join('');
+        <div class="group-body">
+          <div class="group-body-inner">
+            ${grp.items.map(item => {
+              const col = cellBg(item.combined);
+              const ratingLvl = strengthToRating(item.combined);
+              const scaleObj = RATING_SCALE.find(r => r.level === ratingLvl) || RATING_SCALE[0];
+              
+              return `
+                <div class="due-item" onclick="openAyahSheet('${item.id}')">
+                  <span class="strength-dot" style="background:${col}1c;color:${col}">${item.combined}%</span>
+                  <span style="flex:1;min-width:0;">
+                    <span class="ref">${cleanEnName(item.s.name)} · ${item.ai + 1}</span>
+                    <span class="ar-line">${item.ar}</span>
+                  </span>
+                  <span class="why">
+                    <span class="lvl-badge ${scaleObj.class}">${scaleObj.label}</span>
+                  </span>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
 }
 
 /* ============ 3. RENDER QURAN BROWSER VIEW ============ */
