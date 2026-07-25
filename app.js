@@ -264,9 +264,9 @@ export function getCombinedStrength(id) {
     if (isSurahMemorized(sNum)) return 100;
     return null;
   }
-  const aVal = a ?? 100;
-  const mVal = m ?? 100;
-  return Math.round((aVal + mVal) / 2);
+  if (a !== null && m !== null) return Math.round((a + m) / 2);
+  if (a !== null) return a;
+  return m;
 }
 
 // 9-Point Scale Rating Update
@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.7.6 (updated 2026-07-25 00:55)`;  
+    verDiv.textContent = `v1.7.7 (updated 2026-07-25 20:53)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.7.6`;
+    settVerBadge.textContent = `v1.7.7`;
   }
 }
 
