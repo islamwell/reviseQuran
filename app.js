@@ -400,11 +400,11 @@ function applyPreferences() {
   
   const verDiv = document.getElementById('appVersion');
   if (verDiv) {
-    verDiv.textContent = `v1.7.7 (updated 2026-07-25 20:53)`;  
+    verDiv.textContent = `v1.7.8 (updated 2026-07-25 21:01)`;  
   }
   const settVerBadge = document.getElementById('settingsVerBadge');
   if (settVerBadge) {
-    settVerBadge.textContent = `v1.7.7`;
+    settVerBadge.textContent = `v1.7.8`;
   }
 }
 
@@ -582,7 +582,15 @@ export function toggleReviseGroup(sNum) {
 }
 window.toggleReviseGroup = toggleReviseGroup;
 
-/* ============ 2. RENDER REVISE VIEW (Intelligent Queue) ============ */
+/* ============ 2. RENDER REVISE VIEW (Intelligent Queue & Sorting) ============ */
+let reviseSortCriteria = 'weakest';
+
+export function setReviseSort(criteria) {
+  reviseSortCriteria = criteria;
+  renderRevise();
+}
+window.setReviseSort = setReviseSort;
+
 function renderRevise() {
   const container = document.getElementById('revisionQueueList');
   if (!container) return;
@@ -624,6 +632,16 @@ function renderRevise() {
     const avgGrpStr = Math.round(grp.items.reduce((acc, curr) => acc + curr.combined, 0) / grp.items.length);
     grp.avgGrpStr = avgGrpStr;
     
+    // Find latest revised timestamp across items in group
+    let maxLast = 0;
+    grp.items.forEach(it => {
+      const stA = S.stats[it.id]?.a?.last || 0;
+      const stM = S.stats[it.id]?.m?.last || 0;
+      const l = Math.max(stA, stM);
+      if (l > maxLast) maxLast = l;
+    });
+    grp.lastRevised = maxLast;
+    
     // Check if the group has ANY weak or medium ayahs (< 90% strength)
     const hasWeakOrMed = grp.items.some(item => item.combined < 90);
     
@@ -633,8 +651,20 @@ function renderRevise() {
     }
   });
   
-  // Show the weakest Surah first (ascending avgGrpStr)
-  groups.sort((a, b) => a.avgGrpStr - b.avgGrpStr);
+  // Sort Surah cards based on selected criteria
+  if (reviseSortCriteria === 'weakest') {
+    groups.sort((a, b) => a.avgGrpStr - b.avgGrpStr);
+  } else if (reviseSortCriteria === 'strongest') {
+    groups.sort((a, b) => b.avgGrpStr - a.avgGrpStr);
+  } else if (reviseSortCriteria === 'largest') {
+    groups.sort((a, b) => b.surah.ayahs.length - a.surah.ayahs.length);
+  } else if (reviseSortCriteria === 'smallest') {
+    groups.sort((a, b) => a.surah.ayahs.length - b.surah.ayahs.length);
+  } else if (reviseSortCriteria === 'surahNum') {
+    groups.sort((a, b) => a.surah.n - b.surah.n);
+  } else if (reviseSortCriteria === 'date') {
+    groups.sort((a, b) => b.lastRevised - a.lastRevised);
+  }
   
   if (!groups.length) {
     container.innerHTML = `
@@ -650,13 +680,27 @@ function renderRevise() {
   const totalQueuedVerses = groups.reduce((acc, g) => acc + g.items.length, 0);
   
   let html = `
-    <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:0.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;">
-        ${groups.length} Surahs Needing Revision (${totalQueuedVerses} Verses)
-      </span>
-      <button class="cta" style="width:auto;padding:8px 16px;font-size:0.8rem;" onclick="startPracticeSession()">
-        Revise All →
-      </button>
+    <div style="margin-bottom:16px;display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <span style="font-size:0.75rem;font-weight:800;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;">
+          ${groups.length} Surahs Needing Revision (${totalQueuedVerses} Verses)
+        </span>
+        <button class="cta" style="width:auto;padding:8px 16px;font-size:0.8rem;" onclick="startPracticeSession()">
+          Revise All →
+        </button>
+      </div>
+      
+      <div style="display:flex;align-items:center;justify-content:space-between;background:var(--card2);padding:6px 12px;border-radius:12px;border:1px solid var(--line);">
+        <span style="font-size:0.72rem;font-weight:800;color:var(--ink2);">Sort Queue:</span>
+        <select id="reviseSortSelect" onchange="setReviseSort(this.value)" style="background:var(--bg);color:var(--ink);border:1px solid var(--line);padding:4px 8px;border-radius:8px;font-size:0.75rem;font-weight:700;outline:none;cursor:pointer;">
+          <option value="weakest" ${reviseSortCriteria === 'weakest' ? 'selected' : ''}>🔴 Weakest First</option>
+          <option value="strongest" ${reviseSortCriteria === 'strongest' ? 'selected' : ''}>🟢 Strongest First</option>
+          <option value="largest" ${reviseSortCriteria === 'largest' ? 'selected' : ''}>📏 Largest Surah (Ayahs)</option>
+          <option value="smallest" ${reviseSortCriteria === 'smallest' ? 'selected' : ''}>📐 Smallest Surah (Ayahs)</option>
+          <option value="surahNum" ${reviseSortCriteria === 'surahNum' ? 'selected' : ''}>🔢 Surah Number (1-114)</option>
+          <option value="date" ${reviseSortCriteria === 'date' ? 'selected' : ''}>📅 Recently Revised</option>
+        </select>
+      </div>
     </div>
   `;
   
@@ -1370,6 +1414,7 @@ export function startSurahRevision(sNum) {
 export function endSession(finished) {
   document.getElementById('practice').classList.remove('open');
   renderHome();
+  renderRevise();
   if (finished !== false) toast("Session completed! ✦");
 }
 
